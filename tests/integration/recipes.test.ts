@@ -124,7 +124,7 @@ describe("editor: vínculo ingrediente x produto, âncora e cliente", () => {
         source: "catalog",
       } as never,
     ]);
-    const created = await suggestProductsForRecipe(ctx.db, ctx.tenantId, recipe!.id);
+    const created = await suggestProductsForRecipe(ctx.db, ctx.tenantId, recipe!.id, null);
     expect(created).toBeGreaterThan(0);
     const [product] = (await productsRepo.listProducts(ctx.db, ctx.tenantId, { q: "polpa" })).rows;
     await linkIngredientToProduct(ctx.db, ctx.tenantId, ingredient.id, product!.id);
@@ -138,6 +138,42 @@ describe("editor: vínculo ingrediente x produto, âncora e cliente", () => {
     expect(links[0]).toMatchObject({ link: { status: "approved" } });
     const saved = await recipesRepo.getRecipeItem(ctx.db, ctx.tenantId, item.id);
     expect(saved).toMatchObject({ isAnchor: true, qtyPerPortion: "120" });
+  });
+
+  it("usa o ranking da IA (mockado) e grava como suggested por ai, ignorando ids inventados", async () => {
+    const bread = await recipesRepo.findRecipeByName(ctx.db, ctx.tenantId, "Pão com queijo");
+    await productsRepo.upsertProducts(ctx.db, ctx.tenantId, [
+      {
+        code: "7002",
+        description: "QUEIJO MUSSARELA FATIADO 1KG",
+        searchText: "7002 QUEIJO MUSSARELA FATIADO 1KG",
+        source: "catalog",
+      } as never,
+    ]);
+    const mozzarella = (await productsRepo.listProducts(ctx.db, ctx.tenantId, { q: "mussarela" }))
+      .rows[0]!;
+    const items = await recipesRepo.listRecipeItems(ctx.db, ctx.tenantId, bread!.id);
+    const cheese = items.find((i) => i.ingredient.name.startsWith("Queijo"))!;
+    const calls: number[] = [];
+    const created = await suggestProductsForRecipe(ctx.db, ctx.tenantId, bread!.id, async (inp) => {
+      calls.push(inp.length);
+      return new Map([
+        [
+          cheese.ingredient.id,
+          [
+            { productId: mozzarella.id, score: 0.9, reason: "mesmo queijo" },
+            { productId: "00000000-0000-0000-0000-000000000000", score: 0.8, reason: "inventado" },
+          ],
+        ],
+      ]);
+    });
+    expect(calls).toHaveLength(1);
+    expect(created).toBe(1);
+    const links = await recipesRepo.listIngredientLinks(ctx.db, ctx.tenantId, [
+      cheese.ingredient.id,
+    ]);
+    expect(links).toHaveLength(1);
+    expect(links[0]!.link).toMatchObject({ status: "suggested", suggestedBy: "ai" });
   });
 
   it("sugere receitas pelo segmento do cliente e confirma a associação", async () => {

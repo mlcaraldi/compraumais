@@ -1,5 +1,6 @@
 import type { Db } from "../db/client";
 import { ingredientDisplayName, ingredientKey } from "../normalize";
+import { rankProductCandidates } from "../importers/ai/rank-products";
 import { auditRepo, customersRepo, recipesRepo } from "../repos";
 
 const UNITS = ["g", "ml", "un"] as const;
@@ -128,11 +129,19 @@ export async function reviewIngredientLink(
   else await recipesRepo.setIngredientLinkStatus(db, tenantId, linkId, decision);
 }
 
+export type ProductRanker = typeof rankProductCandidates;
+
 /**
- * Para cada ingrediente da receita sem vínculo, grava como `suggested` os melhores candidatos
- * por trigram (nota mínima 0,2). O re-ranking por IA entra na T08.
+ * Para cada ingrediente da receita sem vínculo, busca os 10 produtos mais parecidos por trigram
+ * e, havendo chave da API, pede à IA os 3 melhores. Sem IA (ou se ela falhar), usa os 3 melhores
+ * por trigram (nota mínima 0,2). O resultado entra como `suggested`; só `approved` vale para o motor.
  */
-export async function suggestProductsForRecipe(db: Db, tenantId: string, recipeId: string) {
+export async function suggestProductsForRecipe(
+  db: Db,
+  tenantId: string,
+  recipeId: string,
+  ranker: ProductRanker | null = process.env.ANTHROPIC_API_KEY ? rankProductCandidates : null,
+) {
   const items = await recipesRepo.listRecipeItems(db, tenantId, recipeId);
   const links = await recipesRepo.listIngredientLinks(
     db,
@@ -143,19 +152,55 @@ export async function suggestProductsForRecipe(db: Db, tenantId: string, recipeI
     links.filter((l) => l.link.status !== "rejected").map((l) => l.link.ingredientId),
   );
   const rejected = new Set(links.map((l) => `${l.link.ingredientId}:${l.link.productId}`));
-  let created = 0;
+  const pending: {
+    ingredientId: string;
+    name: string;
+    found: Awaited<ReturnType<typeof recipesRepo.searchProductsByTrigram>>;
+  }[] = [];
   for (const { ingredient } of items) {
     if (linked.has(ingredient.id)) continue;
-    const found = await recipesRepo.searchProductsByTrigram(db, tenantId, ingredient.name, 10);
-    const picks = found
-      .filter((f) => f.score >= 0.2 && !rejected.has(`${ingredient.id}:${f.product.id}`))
-      .slice(0, 3);
-    for (const [idx, p] of picks.entries()) {
+    const found = (
+      await recipesRepo.searchProductsByTrigram(db, tenantId, ingredient.name, 10)
+    ).filter((f) => !rejected.has(`${ingredient.id}:${f.product.id}`));
+    if (found.length) pending.push({ ingredientId: ingredient.id, name: ingredient.name, found });
+  }
+
+  let ranked: Awaited<ReturnType<ProductRanker>> | null = null;
+  if (ranker && pending.length) {
+    try {
+      ranked = await ranker(
+        pending.map((p) => ({
+          ingredientId: p.ingredientId,
+          name: p.name,
+          candidates: p.found.map((f) => ({
+            productId: f.product.id,
+            description: f.product.description,
+            brand: f.product.brand,
+            packText: f.product.packText,
+          })),
+        })),
+      );
+    } catch (e) {
+      console.warn("sugestão de produtos por IA falhou, usando trigram:", e);
+    }
+  }
+
+  let created = 0;
+  for (const p of pending) {
+    const picks = ranked
+      ? (ranked.get(p.ingredientId) ?? [])
+          .map((c) => c.productId)
+          .filter((id) => p.found.some((f) => f.product.id === id))
+      : p.found
+          .filter((f) => f.score >= 0.2)
+          .slice(0, 3)
+          .map((f) => f.product.id);
+    for (const [idx, productId] of picks.entries()) {
       await recipesRepo.upsertIngredientLink(db, tenantId, {
-        ingredientId: ingredient.id,
-        productId: p.product.id,
+        ingredientId: p.ingredientId,
+        productId,
         status: "suggested",
-        suggestedBy: "user",
+        suggestedBy: ranked ? "ai" : "user",
         priority: idx + 1,
       });
       created++;
