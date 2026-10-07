@@ -1,0 +1,11 @@
+.next
+node_modules
+data
+storage
+pnpm-lock.yaml
+src/server/db/migrations
+playwright-report
+test-results
+docs/plano-mvp.md
+CLAUDE.md
+docs

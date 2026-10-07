@@ -1,0 +1,52 @@
+@import "./tokens/fonts.css";
+@import "tailwindcss";
+@import "./tokens/colors.css";
+@import "./tokens/typography.css";
+@import "./tokens/spacing.css";
+
+@theme inline {
+  --color-verde-noite: var(--cm-verde-noite);
+  --color-farinha: var(--cm-farinha);
+  --color-brasa: var(--cm-brasa);
+  --color-brasa-escura: var(--cm-brasa-escura);
+  --color-manjericao: var(--cm-manjericao);
+  --color-manjericao-claro: var(--cm-manjericao-claro);
+  --color-sal: var(--cm-sal);
+  --color-linho: var(--cm-linho);
+  --color-borda-forte: var(--cm-borda-forte);
+  --color-grafite: var(--cm-grafite);
+  --color-noite-2: var(--cm-noite-2);
+  --color-noite-borda: var(--cm-noite-borda);
+  --color-sobre-escuro-1: var(--cm-sobre-escuro-1);
+  --color-sobre-escuro-2: var(--cm-sobre-escuro-2);
+  --color-whats-fundo: var(--cm-whats-fundo);
+  --font-display: var(--cm-font-display);
+  --font-sans: var(--cm-font-sans);
+  --font-mono: var(--cm-font-mono);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-alert: var(--radius-alert);
+  --shadow-card: var(--shadow-card);
+  --shadow-float: var(--shadow-float);
+}
+
+html,
+body {
+  background: var(--bg-page);
+  color: var(--fg-1);
+  font-family: var(--cm-font-sans);
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--cm-font-display);
+  font-weight: 600;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
