@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "recipe_items_recipe_ingredient" ON "recipe_items" USING btree ("recipe_id","ingredient_id");

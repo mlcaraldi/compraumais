@@ -7,6 +7,7 @@ import { getDb } from "@/server/db/client";
 import { CUSTOMER_FIELDS, type CustomerMapping } from "@/server/importers/spreadsheet/customers";
 import { PRODUCT_FIELDS, type ProductMapping } from "@/server/importers/spreadsheet/products";
 import { importsRepo } from "@/server/repos";
+import { confirmRecipeImport } from "@/server/services/import-recipes";
 import {
   confirmProductImport,
   createProductImport,
@@ -131,11 +132,14 @@ export async function confirmAction(formData: FormData) {
   try {
     if (job?.kind === "products")
       await confirmProductImport(getDb(), user.tenantId, jobId, user.id);
+    else if (job?.kind === "recipes")
+      await confirmRecipeImport(getDb(), user.tenantId, jobId, user.id);
     else await confirmCustomerImport(getDb(), user.tenantId, jobId, user.id);
   } catch (e) {
     back(jobId, e instanceof Error ? e.message : "Erro");
   }
   revalidatePath("/clientes");
   revalidatePath("/produtos");
+  revalidatePath("/receitas");
   back(jobId);
 }

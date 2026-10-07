@@ -258,7 +258,10 @@ export const recipeItems = pgTable(
     packSizeHint: numeric("pack_size_hint"),
     packPriceHintCents: integer("pack_price_hint_cents"),
   },
-  () => [check("recipe_items_unit_check", inList("unit", ["g", "ml", "un"]))],
+  (t) => [
+    check("recipe_items_unit_check", inList("unit", ["g", "ml", "un"])),
+    uniqueIndex("recipe_items_recipe_ingredient").on(t.recipeId, t.ingredientId),
+  ],
 );
 
 export const customerRecipes = pgTable(

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/core/Badge";
 import { Button } from "@/components/core/Button";
@@ -6,8 +7,13 @@ import { Input } from "@/components/core/Input";
 import { PageHeader } from "@/components/PageHeader";
 import { requireUser } from "@/server/auth/current-user";
 import { getDb } from "@/server/db/client";
-import { customersRepo, segmentsRepo } from "@/server/repos";
-import { updateCustomerAction } from "../actions";
+import { customersRepo, recipesRepo, segmentsRepo } from "@/server/repos";
+import {
+  addCustomerRecipeAction,
+  removeCustomerRecipeAction,
+  saveCustomerRecipeAction,
+  updateCustomerAction,
+} from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +32,16 @@ export default async function ClientePage({
   if (!c) notFound();
   const segments = await segmentsRepo.listSegments(db, user.tenantId);
   const segment = segments.find((s) => s.id === c.segmentId)?.name;
+  const [mine, suggested, allRecipes] = await Promise.all([
+    recipesRepo.listCustomerRecipes(db, user.tenantId, id),
+    recipesRepo.suggestRecipesForSegment(db, user.tenantId, id, c.segmentId),
+    recipesRepo.listRecipes(db, user.tenantId),
+  ]);
+  const others = allRecipes.filter(
+    (r) =>
+      !mine.some((m) => m.recipe.id === r.recipe.id) &&
+      !suggested.some((x) => x.recipe.id === r.recipe.id),
+  );
   const kindLabel = {
     mobile: "celular",
     landline: "fixo, sem WhatsApp provável",
@@ -96,6 +112,110 @@ export default async function ClientePage({
           </form>
         </Card>
       </div>
+      <Card style={{ marginTop: 16 }}>
+        <h2 style={{ fontSize: "var(--text-h3)", margin: "0 0 12px" }}>Receitas do cliente</h2>
+        {mine.length === 0 && (
+          <p style={{ color: "var(--fg-2)", marginTop: 0 }}>Nenhuma receita associada ainda.</p>
+        )}
+        <div style={{ display: "grid", gap: 8 }}>
+          {mine.map(({ link, recipe }) => (
+            <div
+              key={link.id}
+              style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}
+            >
+              <Link
+                href={`/receitas/${recipe.id}`}
+                style={{ color: "var(--fg-accent)", fontWeight: 600, minWidth: 220 }}
+              >
+                {recipe.name}
+              </Link>
+              <form action={saveCustomerRecipeAction} style={{ display: "flex", gap: 6 }}>
+                <input type="hidden" name="customerId" value={c.id} />
+                <input type="hidden" name="id" value={link.id} />
+                <input
+                  name="portions"
+                  defaultValue={
+                    link.portionsPerDay === null ? "" : String(Number(link.portionsPerDay))
+                  }
+                  placeholder="Porções por dia"
+                  aria-label="Porções por dia"
+                  inputMode="decimal"
+                  style={{
+                    height: 36,
+                    width: 140,
+                    borderRadius: "var(--radius-md)",
+                    border: "1px solid var(--border-strong)",
+                    padding: "0 8px",
+                    fontFamily: "inherit",
+                  }}
+                />
+                <Button type="submit" size="sm" variant="secondary">
+                  Salvar
+                </Button>
+              </form>
+              <form action={removeCustomerRecipeAction}>
+                <input type="hidden" name="customerId" value={c.id} />
+                <input type="hidden" name="id" value={link.id} />
+                <Button type="submit" size="sm" variant="ghost">
+                  Remover
+                </Button>
+              </form>
+            </div>
+          ))}
+        </div>
+        {suggested.length > 0 && (
+          <>
+            <h3 style={{ fontSize: 16, margin: "20px 0 8px" }}>Sugeridas pelo segmento</h3>
+            <div style={{ display: "grid", gap: 8 }}>
+              {suggested.map(({ recipe }) => (
+                <form
+                  key={recipe.id}
+                  action={addCustomerRecipeAction}
+                  style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}
+                >
+                  <input type="hidden" name="customerId" value={c.id} />
+                  <input type="hidden" name="recipeId" value={recipe.id} />
+                  <input type="hidden" name="source" value="segment_suggestion" />
+                  <span style={{ minWidth: 220 }}>{recipe.name}</span>
+                  <Button type="submit" size="sm">
+                    Confirmar
+                  </Button>
+                </form>
+              ))}
+            </div>
+          </>
+        )}
+        {others.length > 0 && (
+          <form
+            action={addCustomerRecipeAction}
+            style={{ display: "flex", gap: 8, marginTop: 20, flexWrap: "wrap" }}
+          >
+            <input type="hidden" name="customerId" value={c.id} />
+            <input type="hidden" name="source" value="user" />
+            <select
+              name="recipeId"
+              aria-label="Adicionar receita"
+              style={{
+                height: 36,
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--border-strong)",
+                padding: "0 8px",
+                fontFamily: "inherit",
+                minWidth: 240,
+              }}
+            >
+              {others.map(({ recipe }) => (
+                <option key={recipe.id} value={recipe.id}>
+                  {recipe.name}
+                </option>
+              ))}
+            </select>
+            <Button type="submit" size="sm" variant="secondary">
+              Adicionar receita
+            </Button>
+          </form>
+        )}
+      </Card>
     </>
   );
 }

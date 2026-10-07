@@ -19,6 +19,7 @@ import {
 } from "@/server/importers/spreadsheet/products";
 import { formatCents } from "@/server/normalize";
 import type { ProductRowData } from "@/server/services/import-products";
+import type { RecipeItemRowData, RecipeRowData } from "@/server/services/import-recipes";
 import type { RowWarning } from "@/server/importers/types";
 import { documentsRepo, importsRepo, segmentsRepo } from "@/server/repos";
 import type { CustomerJobMeta, CustomerRowData } from "@/server/services/import-customers";
@@ -55,6 +56,7 @@ export default async function ImportReviewPage({
   const totalRows = Object.values(counts).reduce((a, b) => a + b, 0);
   const pages = Math.max(1, Math.ceil(filteredTotal / PAGE_SIZE));
   const isProducts = job.kind === "products";
+  const isRecipes = job.kind === "recipes";
   const segments = await segmentsRepo.listSegments(db, user.tenantId);
   const segName = new Map(segments.map((s) => [s.id, s.name]));
   const canConfirm = job.status === "review" && pending === 0 && !meta.needsMapping;
@@ -120,7 +122,7 @@ export default async function ImportReviewPage({
             <Stat label="Aceitas" value={(counts.accepted ?? 0) + (counts.edited ?? 0)} />
             <Stat label="Pendentes" value={pending} />
             <Stat label="Rejeitadas" value={counts.rejected ?? 0} />
-            <Stat label="Linhas ignoradas (sem código)" value={meta.skipped ?? 0} />
+            {!isRecipes && <Stat label="Linhas ignoradas (sem código)" value={meta.skipped ?? 0} />}
           </dl>
           {job.status === "review" && (
             <form action={confirmAction} style={{ marginTop: 16 }}>
@@ -180,9 +182,18 @@ export default async function ImportReviewPage({
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
                   <tr style={{ textAlign: "left", color: "var(--fg-2)" }}>
-                    {(isProducts
-                      ? ["Código", "Produto", "Embalagem", "Preço", "Situação", "Avisos", ""]
-                      : ["Código", "Cliente", "Telefone", "Ramo", "Situação", "Avisos", ""]
+                    {(isRecipes
+                      ? [
+                          "Receita / ingrediente",
+                          "Quantidade",
+                          "Embalagem",
+                          "Situação",
+                          "Avisos",
+                          "",
+                        ]
+                      : isProducts
+                        ? ["Código", "Produto", "Embalagem", "Preço", "Situação", "Avisos", ""]
+                        : ["Código", "Cliente", "Telefone", "Ramo", "Situação", "Avisos", ""]
                     ).map((h) => (
                       <th key={h} style={{ padding: "8px 12px", fontWeight: 500 }}>
                         {h}
@@ -204,7 +215,13 @@ export default async function ImportReviewPage({
                           verticalAlign: "top",
                         }}
                       >
-                        {isProducts ? (
+                        {isRecipes ? (
+                          <RecipeCells
+                            rowType={r.rowType}
+                            data={r.data as RecipeRowData & RecipeItemRowData}
+                            matchType={r.matchType}
+                          />
+                        ) : isProducts ? (
                           <ProductCells d={r.data as ProductRowData} matchType={r.matchType} />
                         ) : (
                           <CustomerCells
@@ -448,6 +465,50 @@ function ProductCells({ d, matchType }: { d: ProductRowData; matchType: string |
       <td className="tabular" style={{ ...TD, whiteSpace: "nowrap" }}>
         {d.listPriceCents === null ? "" : formatCents(d.listPriceCents)}
         <div style={{ color: "var(--fg-2)", fontSize: 12 }}>{d.saleUnit ?? ""}</div>
+      </td>
+    </>
+  );
+}
+
+function RecipeCells({
+  rowType,
+  data,
+  matchType,
+}: {
+  rowType: string;
+  data: RecipeRowData & RecipeItemRowData;
+  matchType: string | null;
+}) {
+  if (rowType === "recipe") {
+    return (
+      <>
+        <td style={{ ...TD, minWidth: 240 }}>
+          <div style={{ fontWeight: 700 }}>{data.name}</div>
+          <div style={{ color: "var(--fg-2)", fontSize: 12 }}>
+            {matchType === "description" ? "já existe" : "nova"} · {data.itemCount} ingredientes
+          </div>
+        </td>
+        <td style={TD} />
+        <td style={TD} />
+      </>
+    );
+  }
+  return (
+    <>
+      <td style={{ ...TD, paddingLeft: 28, minWidth: 240 }}>
+        {data.ingredientName}
+        <div style={{ color: "var(--fg-2)", fontSize: 12 }}>
+          {matchType === "description" ? "ingrediente já existe" : "ingrediente novo"}
+        </div>
+      </td>
+      <td className="tabular" style={{ ...TD, whiteSpace: "nowrap" }}>
+        {data.qtyPerPortion} {data.unit}
+      </td>
+      <td className="tabular" style={{ ...TD, whiteSpace: "nowrap" }}>
+        {data.packSize ? `${data.packSize}` : ""}
+        <div style={{ color: "var(--fg-2)", fontSize: 12 }}>
+          {data.packPriceCents === null ? "" : formatCents(data.packPriceCents)}
+        </div>
       </td>
     </>
   );

@@ -15,6 +15,13 @@
       "when": 1791399635067,
       "tag": "0001_file_blobs",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791400478494,
+      "tag": "0002_recipe_items_unique",
+      "breakpoints": true
     }
   ]
 }
