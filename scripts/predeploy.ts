@@ -14,6 +14,7 @@ async function main() {
     console.warn("predeploy: DATABASE_URL ausente, nada a fazer.");
     return;
   }
+  console.log(`predeploy: conectando em ${new URL(url).host}`);
   await runMigrations(url);
   console.log("predeploy: migrations aplicadas");
   const db = getDb();

@@ -12,6 +12,7 @@ function poolConfig(url: string) {
   return {
     connectionString: u.toString(),
     max: Number(process.env.DB_POOL_MAX ?? 10),
+    connectionTimeoutMillis: Number(process.env.DB_CONNECT_TIMEOUT_MS ?? 15000),
     ssl: local ? undefined : { rejectUnauthorized: false },
   };
 }
