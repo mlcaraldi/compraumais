@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
+  customType,
   date,
   index,
   integer,
@@ -25,6 +26,10 @@ const tenantId = () =>
     .references(() => tenants.id);
 const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
 const updatedAt = () => timestamp("updated_at", { withTimezone: true }).notNull().defaultNow();
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType: () => "bytea",
+});
+
 const inList = (col: string, values: string[]) =>
   sql.raw(`${col} in (${values.map((v) => `'${v}'`).join(", ")})`);
 
@@ -544,3 +549,15 @@ export const auditLog = pgTable("audit_log", {
   diff: jsonb("diff"),
   at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** Conteúdo dos arquivos quando STORAGE_DRIVER=db (homologação na Vercel, sem disco). */
+export const fileBlobs = pgTable(
+  "file_blobs",
+  {
+    tenantId: tenantId(),
+    key: text("key").notNull(),
+    data: bytea("data").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.tenantId, t.key] })],
+);

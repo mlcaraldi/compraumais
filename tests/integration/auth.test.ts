@@ -13,11 +13,11 @@ beforeAll(async () => {
 afterAll(closeDb);
 
 describe("banco e autenticação", () => {
-  it("migrations rodam do zero, com extensões e as 25 tabelas", async () => {
+  it("migrations rodam do zero, com extensões e as 26 tabelas", async () => {
     const tables = await ctx.db.execute(
       sql`select count(*)::int as n from information_schema.tables where table_schema = 'public'`,
     );
-    expect(tables.rows[0]!.n).toBe(25);
+    expect(tables.rows[0]!.n).toBe(26);
     const ext = await ctx.db.execute(
       sql`select extname from pg_extension where extname in ('pg_trgm','unaccent')`,
     );

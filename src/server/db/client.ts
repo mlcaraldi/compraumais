@@ -4,8 +4,20 @@ import * as schema from "./schema";
 
 export type Db = ReturnType<typeof createDb>["db"];
 
+/** Bancos remotos (Supabase) exigem TLS; o certificado do pooler não está na cadeia padrão do Node. */
+function poolConfig(url: string) {
+  const u = new URL(url);
+  const local = ["localhost", "127.0.0.1", "db", "db-test"].includes(u.hostname);
+  u.searchParams.delete("sslmode");
+  return {
+    connectionString: u.toString(),
+    max: Number(process.env.DB_POOL_MAX ?? 10),
+    ssl: local ? undefined : { rejectUnauthorized: false },
+  };
+}
+
 export function createDb(url: string) {
-  const pool = new Pool({ connectionString: url, max: 10 });
+  const pool = new Pool(poolConfig(url));
   const db = drizzle(pool, { schema });
   return { db, pool };
 }

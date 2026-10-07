@@ -1,2 +1,7 @@
 export * as usersRepo from "./users";
 export * as settingsRepo from "./settings";
+export * as documentsRepo from "./documents";
+export * as segmentsRepo from "./segments";
+export * as importsRepo from "./imports";
+export * as customersRepo from "./customers";
+export * as auditRepo from "./audit";

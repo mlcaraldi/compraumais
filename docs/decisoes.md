@@ -11,3 +11,10 @@
 2026-10-07 | Ramo em branco não vira alias (51 aliases); o importador de clientes atribui direto o segmento sem_ramo | o plano exige 51 aliases e 11 segmentos
 2026-10-07 | tests/fixtures/segmentos_ramo.csv é cópia do CSV de ramos (sem dados pessoais) usada pelo seed quando data/real não existe | previsto no plano (T04)
 2026-10-07 | DDDs válidos usam a lista real de DDDs brasileiros, não "11 a 99" | evita aceitar DDDs que não existem (ex.: 20, 23)
+2026-10-07 | Leitor de XLSX próprio (fflate + fast-xml-parser) em vez de exceljs | a exportação do ERP usa prefixo de namespace x:, links absolutos e strings inline; exceljs e read-excel-file falharam na planilha real; SheetJS do npm (0.18.5) tem CVEs e o CDN oficial é bloqueado
+2026-10-07 | Armazenamento de arquivos com dois drivers: disco (padrão) e Postgres (tabela file_blobs, STORAGE_DRIVER=db) | homologação na Vercel não tem disco persistente; o plano de produção em EC2 continua com disco
+2026-10-07 | Homologação: Vercel + Supabase (pedido do Marcelo, 07/10); migrations, seed e primeiro admin rodam no build (pnpm predeploy) | substitui a T16 para teste; EC2 segue previsto para produção
+2026-10-07 | Upload limitado a 4 MB (Vercel limita o corpo da requisição a 4,5 MB); o PDF Promoções.pdf (8 MB) não pode ser enviado por upload na homologação | limite da plataforma
+2026-10-07 | Conexão com banco remoto usa TLS sem verificar a cadeia (rejectUnauthorized=false) | o certificado do pooler do Supabase não está no trust store padrão do Node; aceitável em homologação
+2026-10-07 | Importação de planilha de clientes é síncrona (sem fila): o job nasce direto em "review" | não há IA; leva menos de 1 s para 242 linhas
+2026-10-07 | Linha duplicada de código na planilha: a repetida é rejeitada com aviso bloqueante; aceitar de novo exige resolver | evita upsert duplo no mesmo lote
