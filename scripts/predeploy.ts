@@ -2,7 +2,7 @@ import { count } from "drizzle-orm";
 import { closeDb, getDb } from "../src/server/db/client";
 import { seedTenant } from "../src/server/db/seed";
 import { users } from "../src/server/db/schema";
-import { createUser } from "../src/server/repos/users";
+import { createUser, resetUserPassword } from "../src/server/repos/users";
 import { runMigrations } from "./migrate";
 
 /** Roda no build da Vercel: migrations, seed e primeiro usuário admin (se ainda não houver usuários). */
@@ -29,6 +29,13 @@ async function main() {
       password: ADMIN_PASSWORD,
     });
     console.log(`predeploy: usuário admin criado (${ADMIN_EMAIL})`);
+  } else if (n > 0 && ADMIN_EMAIL && process.env.ADMIN_RESET_PASSWORD) {
+    const ok = await resetUserPassword(db, tenantId, ADMIN_EMAIL, process.env.ADMIN_RESET_PASSWORD);
+    console.log(
+      ok
+        ? "predeploy: senha do admin redefinida (remova ADMIN_RESET_PASSWORD da Vercel)"
+        : `predeploy: usuário ${ADMIN_EMAIL} não encontrado, senha não redefinida`,
+    );
   } else if (n === 0) {
     console.warn("predeploy: nenhum usuário e ADMIN_EMAIL/ADMIN_PASSWORD não definidos");
   }

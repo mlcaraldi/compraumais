@@ -23,6 +23,16 @@ export async function createUser(
   return row!;
 }
 
+export async function resetUserPassword(db: Db, tenantId: string, email: string, password: string) {
+  requireTenant(tenantId);
+  const rows = await db
+    .update(users)
+    .set({ passwordHash: await hashPassword(password) })
+    .where(and(eq(users.tenantId, tenantId), eq(users.email, email.trim().toLowerCase())))
+    .returning({ id: users.id });
+  return rows.length > 0;
+}
+
 export async function getUserById(db: Db, tenantId: string, userId: string) {
   requireTenant(tenantId);
   const [row] = await db
