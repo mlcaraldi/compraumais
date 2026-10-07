@@ -123,3 +123,31 @@ export async function countImportRowsByStatus(db: Db, tenantId: string, jobId: s
     .groupBy(importRows.status);
   return Object.fromEntries(rows.map((r) => [r.status, r.n])) as Record<string, number>;
 }
+
+export async function pageImportRows(
+  db: Db,
+  tenantId: string,
+  jobId: string,
+  opts: { offset: number; limit: number; attention?: boolean },
+) {
+  requireTenant(tenantId);
+  const where = and(
+    eq(importRows.tenantId, tenantId),
+    eq(importRows.importJobId, jobId),
+    opts.attention
+      ? sql`(${importRows.status} <> 'accepted' or ${importRows.warnings} <> '[]'::jsonb)`
+      : undefined,
+  );
+  const [{ n } = { n: 0 }] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(importRows)
+    .where(where);
+  const rows = await db
+    .select()
+    .from(importRows)
+    .where(where)
+    .orderBy(asc(importRows.rowIndex))
+    .offset(opts.offset)
+    .limit(opts.limit);
+  return { rows, total: n };
+}

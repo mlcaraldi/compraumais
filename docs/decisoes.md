@@ -18,3 +18,6 @@
 2026-10-07 | Conexão com banco remoto usa TLS sem verificar a cadeia (rejectUnauthorized=false) | o certificado do pooler do Supabase não está no trust store padrão do Node; aceitável em homologação
 2026-10-07 | Importação de planilha de clientes é síncrona (sem fila): o job nasce direto em "review" | não há IA; leva menos de 1 s para 242 linhas
 2026-10-07 | Linha duplicada de código na planilha: a repetida é rejeitada com aviso bloqueante; aceitar de novo exige resolver | evita upsert duplo no mesmo lote
+2026-10-07 | Rota extra /produtos/[id] para editar produto | o plano pede edição em /produtos sem dizer onde; uma página própria é o mais simples
+2026-10-07 | Importador de catálogo: código fora de 4 a 7 dígitos (ou ambíguo) vira linha pendente que só pode ser rejeitada; preço, marca, embalagem e categoria vazios na planilha nova não apagam o que já existe | segue as regras de código do plano e evita perder dados já cadastrados
+2026-10-07 | Revisão de importação paginada no SQL (50 linhas) e genérica por tipo (clientes e produtos) | catálogos de 7.000 linhas não cabem numa página só

@@ -5,3 +5,4 @@ export * as segmentsRepo from "./segments";
 export * as importsRepo from "./imports";
 export * as customersRepo from "./customers";
 export * as auditRepo from "./audit";
+export * as productsRepo from "./products";

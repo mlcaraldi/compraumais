@@ -11,8 +11,14 @@ import {
   CUSTOMER_FIELDS,
   CUSTOMER_FIELD_LABELS,
   REQUIRED_CUSTOMER_FIELDS,
-  type CustomerMapping,
 } from "@/server/importers/spreadsheet/customers";
+import {
+  PRODUCT_FIELDS,
+  PRODUCT_FIELD_LABELS,
+  REQUIRED_PRODUCT_FIELDS,
+} from "@/server/importers/spreadsheet/products";
+import { formatCents } from "@/server/normalize";
+import type { ProductRowData } from "@/server/services/import-products";
 import type { RowWarning } from "@/server/importers/types";
 import { documentsRepo, importsRepo, segmentsRepo } from "@/server/repos";
 import type { CustomerJobMeta, CustomerRowData } from "@/server/services/import-customers";
@@ -39,14 +45,16 @@ export default async function ImportReviewPage({
   const meta = (job.rawOutput ?? {}) as Partial<CustomerJobMeta>;
   const counts = await importsRepo.countImportRowsByStatus(db, user.tenantId, id);
   const pending = counts.pending ?? 0;
-  const allRows = await importsRepo.listImportRows(db, user.tenantId, id);
   const attention = sp.filtro === "atencao";
-  const filtered = attention
-    ? allRows.filter((r) => r.status !== "accepted" || (r.warnings as RowWarning[]).length > 0)
-    : allRows;
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
-  const rows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const { rows, total: filteredTotal } = await importsRepo.pageImportRows(db, user.tenantId, id, {
+    offset: (page - 1) * PAGE_SIZE,
+    limit: PAGE_SIZE,
+    attention,
+  });
+  const totalRows = Object.values(counts).reduce((a, b) => a + b, 0);
+  const pages = Math.max(1, Math.ceil(filteredTotal / PAGE_SIZE));
+  const isProducts = job.kind === "products";
   const segments = await segmentsRepo.listSegments(db, user.tenantId);
   const segName = new Map(segments.map((s) => [s.id, s.name]));
   const canConfirm = job.status === "review" && pending === 0 && !meta.needsMapping;
@@ -108,7 +116,7 @@ export default async function ImportReviewPage({
           )}
           <hr style={{ border: 0, borderTop: "1px solid var(--border-1)", margin: "16px 0" }} />
           <dl style={{ margin: 0, fontSize: 14, display: "grid", gap: 4 }}>
-            <Stat label="Linhas lidas" value={allRows.length} />
+            <Stat label="Linhas lidas" value={totalRows} />
             <Stat label="Aceitas" value={(counts.accepted ?? 0) + (counts.edited ?? 0)} />
             <Stat label="Pendentes" value={pending} />
             <Stat label="Rejeitadas" value={counts.rejected ?? 0} />
@@ -136,10 +144,17 @@ export default async function ImportReviewPage({
 
         <div style={{ display: "grid", gap: 16, minWidth: 0 }}>
           {job.status === "review" && (meta.needsMapping || sp.filtro === "colunas") && (
-            <MappingForm jobId={id} headers={meta.headers ?? []} mapping={meta.mapping ?? {}} />
+            <MappingForm
+              jobId={id}
+              headers={meta.headers ?? []}
+              mapping={(meta.mapping ?? {}) as Record<string, number>}
+              fields={isProducts ? PRODUCT_FIELDS : CUSTOMER_FIELDS}
+              labels={isProducts ? PRODUCT_FIELD_LABELS : CUSTOMER_FIELD_LABELS}
+              required={isProducts ? REQUIRED_PRODUCT_FIELDS : REQUIRED_CUSTOMER_FIELDS}
+            />
           )}
 
-          {allRows.length > 0 && (
+          {totalRows > 0 && (
             <Card padding={0} style={{ overflowX: "auto" }}>
               <div
                 style={{
@@ -152,7 +167,7 @@ export default async function ImportReviewPage({
               >
                 <div style={{ display: "flex", gap: 8 }}>
                   <Link href={`/importacoes/${id}`}>
-                    <Badge tone={attention ? "outline" : "inverse"}>Todas ({allRows.length})</Badge>
+                    <Badge tone={attention ? "outline" : "inverse"}>Todas ({totalRows})</Badge>
                   </Link>
                   <Link href={`/importacoes/${id}?filtro=atencao`}>
                     <Badge tone={attention ? "inverse" : "outline"}>Precisam de atenção</Badge>
@@ -165,18 +180,18 @@ export default async function ImportReviewPage({
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
                   <tr style={{ textAlign: "left", color: "var(--fg-2)" }}>
-                    {["Código", "Cliente", "Telefone", "Ramo", "Situação", "Avisos", ""].map(
-                      (h) => (
-                        <th key={h} style={{ padding: "8px 12px", fontWeight: 500 }}>
-                          {h}
-                        </th>
-                      ),
-                    )}
+                    {(isProducts
+                      ? ["Código", "Produto", "Embalagem", "Preço", "Situação", "Avisos", ""]
+                      : ["Código", "Cliente", "Telefone", "Ramo", "Situação", "Avisos", ""]
+                    ).map((h) => (
+                      <th key={h} style={{ padding: "8px 12px", fontWeight: 500 }}>
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((r) => {
-                    const d = r.data as CustomerRowData;
                     const warnings = r.warnings as RowWarning[];
                     const blocking = warnings.some((w) => w.severity === "blocking");
                     return (
@@ -189,35 +204,15 @@ export default async function ImportReviewPage({
                           verticalAlign: "top",
                         }}
                       >
-                        <td
-                          className="tabular"
-                          style={{ padding: "8px 12px", whiteSpace: "nowrap" }}
-                        >
-                          {d.externalCode}
-                          <div style={{ color: "var(--fg-2)", fontSize: 12 }}>
-                            {r.matchType === "code" ? "já existe" : "novo"}
-                          </div>
-                        </td>
-                        <td style={{ padding: "8px 12px", minWidth: 180 }}>
-                          <div style={{ fontWeight: 600 }}>{d.tradeName ?? d.legalName}</div>
-                          <div style={{ color: "var(--fg-2)" }}>
-                            {d.tradeName ? d.legalName : ""}
-                          </div>
-                          <div className="tabular" style={{ color: "var(--fg-2)" }}>
-                            {d.city}
-                            {d.blocked ? " · bloqueado" : ""}
-                          </div>
-                        </td>
-                        <td
-                          className="tabular"
-                          style={{ padding: "8px 12px", whiteSpace: "nowrap" }}
-                        >
-                          {d.phoneE164 ?? d.phoneRaw ?? ""}
-                        </td>
-                        <td style={{ padding: "8px 12px", minWidth: 160 }}>
-                          <div>{d.segmentId ? segName.get(d.segmentId) : "sem segmento"}</div>
-                          <div style={{ color: "var(--fg-2)", fontSize: 12 }}>{d.segmentRaw}</div>
-                        </td>
+                        {isProducts ? (
+                          <ProductCells d={r.data as ProductRowData} matchType={r.matchType} />
+                        ) : (
+                          <CustomerCells
+                            d={r.data as CustomerRowData}
+                            matchType={r.matchType}
+                            segName={segName}
+                          />
+                        )}
                         <td style={{ padding: "8px 12px" }}>
                           <Badge
                             tone={
@@ -333,16 +328,22 @@ function MappingForm({
   jobId,
   headers,
   mapping,
+  fields,
+  labels,
+  required,
 }: {
   jobId: string;
   headers: string[];
-  mapping: CustomerMapping;
+  mapping: Record<string, number>;
+  fields: readonly string[];
+  labels: Record<string, string>;
+  required: readonly string[];
 }) {
   return (
     <Card>
       <h2 style={{ fontSize: "var(--text-h3)", margin: "0 0 4px" }}>Colunas da planilha</h2>
       <p style={{ color: "var(--fg-2)", marginTop: 0 }}>
-        Indique qual coluna corresponde a cada campo. Código e razão social são obrigatórios.
+        Indique qual coluna corresponde a cada campo. Os campos com * são obrigatórios.
       </p>
       <form
         action={remapAction}
@@ -353,11 +354,11 @@ function MappingForm({
         }}
       >
         <input type="hidden" name="jobId" value={jobId} />
-        {CUSTOMER_FIELDS.map((f) => (
+        {fields.map((f) => (
           <label key={f} style={{ display: "grid", gap: 4, fontSize: 14 }}>
             <span style={{ fontWeight: 600 }}>
-              {CUSTOMER_FIELD_LABELS[f]}
-              {REQUIRED_CUSTOMER_FIELDS.includes(f) ? " *" : ""}
+              {labels[f]}
+              {required.includes(f) ? " *" : ""}
             </span>
             <select
               name={`map_${f}`}
@@ -385,5 +386,69 @@ function MappingForm({
         </div>
       </form>
     </Card>
+  );
+}
+
+const TD = { padding: "8px 12px" } as const;
+
+function CustomerCells({
+  d,
+  matchType,
+  segName,
+}: {
+  d: CustomerRowData;
+  matchType: string | null;
+  segName: Map<string, string>;
+}) {
+  return (
+    <>
+      <td className="tabular" style={{ ...TD, whiteSpace: "nowrap" }}>
+        {d.externalCode}
+        <div style={{ color: "var(--fg-2)", fontSize: 12 }}>
+          {matchType === "code" ? "já existe" : "novo"}
+        </div>
+      </td>
+      <td style={{ ...TD, minWidth: 180 }}>
+        <div style={{ fontWeight: 600 }}>{d.tradeName ?? d.legalName}</div>
+        <div style={{ color: "var(--fg-2)" }}>{d.tradeName ? d.legalName : ""}</div>
+        <div className="tabular" style={{ color: "var(--fg-2)" }}>
+          {d.city}
+          {d.blocked ? " · bloqueado" : ""}
+        </div>
+      </td>
+      <td className="tabular" style={{ ...TD, whiteSpace: "nowrap" }}>
+        {d.phoneE164 ?? d.phoneRaw ?? ""}
+      </td>
+      <td style={{ ...TD, minWidth: 160 }}>
+        <div>{d.segmentId ? segName.get(d.segmentId) : "sem segmento"}</div>
+        <div style={{ color: "var(--fg-2)", fontSize: 12 }}>{d.segmentRaw}</div>
+      </td>
+    </>
+  );
+}
+
+function ProductCells({ d, matchType }: { d: ProductRowData; matchType: string | null }) {
+  return (
+    <>
+      <td className="tabular" style={{ ...TD, whiteSpace: "nowrap" }}>
+        {d.code}
+        <div style={{ color: "var(--fg-2)", fontSize: 12 }}>
+          {matchType === "code" ? "já existe" : "novo"}
+        </div>
+      </td>
+      <td style={{ ...TD, minWidth: 220 }}>
+        <div style={{ fontWeight: 600 }}>{d.description}</div>
+        <div style={{ color: "var(--fg-2)" }}>
+          {[d.brand, d.category].filter(Boolean).join(" · ")}
+        </div>
+      </td>
+      <td className="tabular" style={TD}>
+        {d.packText ?? (d.packUnitSize ? `${d.packQty} × ${d.packUnitSize} ${d.packUnit}` : "")}
+      </td>
+      <td className="tabular" style={{ ...TD, whiteSpace: "nowrap" }}>
+        {d.listPriceCents === null ? "" : formatCents(d.listPriceCents)}
+        <div style={{ color: "var(--fg-2)", fontSize: 12 }}>{d.saleUnit ?? ""}</div>
+      </td>
+    </>
   );
 }
