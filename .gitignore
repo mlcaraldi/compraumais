@@ -1,5 +1,5 @@
 data/real/
-storage/
+/storage/
 .env
 .env.*
 !.env.example
@@ -8,4 +8,4 @@ node_modules/
 *.tsbuildinfo
 test-results/
 playwright-report/
-storage-test/
+/storage-test/
