@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { closeDb, getDb, type Db } from "./client";
 import { settings, tenants } from "./schema";
 import { DEFAULT_ENGINE_SETTINGS } from "../engine/settings";
+import { loadSegmentsCsv, seedSegments } from "./seed-segments";
 
 export const DEFAULT_TENANT_NAME = "Carteira Ricardo";
 
@@ -17,6 +18,7 @@ export async function seedTenant(db: Db): Promise<string> {
     .insert(settings)
     .values({ tenantId, key: "engine", value: DEFAULT_ENGINE_SETTINGS })
     .onConflictDoNothing();
+  await seedSegments(db, tenantId, loadSegmentsCsv());
   return tenantId;
 }
 

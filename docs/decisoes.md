@@ -7,3 +7,7 @@
 2026-10-07 | O login é a única consulta sem tenantId (e-mail é único no sistema), isolada em server/auth/authenticate.ts | tenant ainda não é conhecido no login
 2026-10-07 | Parâmetros do motor ficam em settings com a chave "engine" (um JSON) | um registro só, mesclado com os padrões
 2026-10-07 | /dev/ui fica fora do proxy mas responde 404 em produção | só existe em desenvolvimento
+2026-10-07 | Telefone: o código de operadora (após o 0 inicial) é removido quando sobram de 10 a 13 dígitos, não só 12 ou 13 | cobre "0 15 54 99612-3757" sem DDD+55; números sem 55 de 13 dígitos não existem, então não há ambiguidade
+2026-10-07 | Ramo em branco não vira alias (51 aliases); o importador de clientes atribui direto o segmento sem_ramo | o plano exige 51 aliases e 11 segmentos
+2026-10-07 | tests/fixtures/segmentos_ramo.csv é cópia do CSV de ramos (sem dados pessoais) usada pelo seed quando data/real não existe | previsto no plano (T04)
+2026-10-07 | DDDs válidos usam a lista real de DDDs brasileiros, não "11 a 99" | evita aceitar DDDs que não existem (ex.: 20, 23)

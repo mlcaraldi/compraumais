@@ -28,6 +28,17 @@ describe("banco e autenticação", () => {
     expect(String(idx.rows[0]!.indexdef)).toContain("gin_trgm_ops");
   });
 
+  it("seed cria 11 segmentos e 51 aliases", async () => {
+    const seg = await ctx.db.execute(sql`select count(*)::int as n from segments`);
+    const ali = await ctx.db.execute(sql`select count(*)::int as n from segment_aliases`);
+    expect(seg.rows[0]!.n).toBe(11);
+    expect(ali.rows[0]!.n).toBe(51);
+    const flags = await ctx.db.execute(
+      sql`select count(*)::int as n from segments where has_recipes`,
+    );
+    expect(flags.rows[0]!.n).toBe(7);
+  });
+
   it("seed cria o tenant e as configurações do motor", async () => {
     const rows = await ctx.db.execute(
       sql`select key from settings where tenant_id = ${ctx.tenantId}`,
