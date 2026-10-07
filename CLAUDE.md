@@ -60,7 +60,7 @@ Next.js (App Router) + TypeScript strict, PostgreSQL 16 + Drizzle, pg-boss (work
 ## Progresso
 - [x] T01 Fundação
 - [x] T02 Design system
-- [ ] T03 Banco, autenticação e layout
+- [x] T03 Banco, autenticação e layout
 - [ ] T04 Normalizadores e segmentos
 - [ ] T05 Upload e importação de clientes
 - [ ] T06 Telas de clientes e produtos
