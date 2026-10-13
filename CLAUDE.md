@@ -58,19 +58,19 @@ Next.js (App Router) + TypeScript strict, PostgreSQL 16 + Drizzle, pg-boss (work
 - `pnpm lint` / `pnpm typecheck` / `pnpm test` / `pnpm test:ai` / `pnpm test:e2e`
 
 ## Progresso
-- [ ] T01 Fundação
-- [ ] T02 Design system
-- [ ] T03 Banco, autenticação e layout
-- [ ] T04 Normalizadores e segmentos
-- [ ] T05 Upload e importação de clientes
-- [ ] T06 Telas de clientes e produtos
-- [ ] T07 Receitas
-- [ ] T08 Fila de jobs e cliente de IA
-- [ ] T09 Importador de pedido
-- [ ] T10 Importador de encartes
-- [ ] T11 Motor de sugestões
-- [ ] T12 Tela do pedido e resultado
-- [ ] T13 Painel
-- [ ] T14 Ciclo de vida das ofertas
-- [ ] T15 Carga inicial e demo
-- [ ] T16 Deploy
+- [x] T01 Fundação
+- [x] T02 Design system
+- [x] T03 Banco, autenticação e layout
+- [x] T04 Normalizadores e segmentos
+- [x] T05 Upload e importação de clientes
+- [x] T06 Telas de clientes e produtos
+- [x] T07 Receitas
+- [x] T08 Fila de jobs e cliente de IA
+- [x] T09 Importador de pedido
+- [x] T10 Importador de encartes
+- [x] T11 Motor de sugestões
+- [x] T12 Tela do pedido e resultado
+- [x] T13 Painel
+- [x] T14 Ciclo de vida das ofertas
+- [x] T15 Carga inicial e demo
+- [x] T16 Deploy (imagem e compose validados só por `config`; ver docs/deploy.md seção 8)

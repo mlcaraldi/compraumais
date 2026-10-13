@@ -1,0 +1,354 @@
+{
+  "_nota": "Valores transcritos das imagens reais por Claude (T10); revise se o teste acusar divergência. Arquivos em data/real/encartes/, deduplicados por SHA-256.",
+  "encartes": [
+    {
+      "file": "66cbf65a6c2cf98411c7303fa6ccd92575c3a6018d2ed58d69f12b4389188071.jpeg",
+      "label": "Fritz & Frida arroz e feijão",
+      "itemCount": 12,
+      "items": [
+        {
+          "codeRaw": "157195",
+          "price": 19.49,
+          "priceUnit": "pct"
+        },
+        {
+          "codeRaw": "134911",
+          "price": 4.95,
+          "priceUnit": "pct"
+        },
+        {
+          "codeRaw": "134912",
+          "price": 9.49,
+          "priceUnit": "pct"
+        },
+        {
+          "codeRaw": "134913",
+          "price": 21.99,
+          "priceUnit": "pct"
+        },
+        {
+          "codeRaw": "134916",
+          "price": 4.59,
+          "priceUnit": "pct"
+        },
+        {
+          "codeRaw": "134914",
+          "price": 8.99,
+          "priceUnit": "pct"
+        },
+        {
+          "codeRaw": "134915",
+          "price": 20.99,
+          "priceUnit": "pct"
+        },
+        {
+          "codeRaw": "134935",
+          "price": 5.79,
+          "priceUnit": "pct"
+        },
+        {
+          "codeRaw": "134937",
+          "price": 9.49,
+          "priceUnit": "pct"
+        },
+        {
+          "codeRaw": "163180",
+          "price": 3.49,
+          "priceUnit": "pct"
+        },
+        {
+          "codeRaw": "134936",
+          "price": 7.19,
+          "priceUnit": "pct"
+        },
+        {
+          "codeRaw": "134940",
+          "price": 5.29,
+          "priceUnit": "pct"
+        }
+      ]
+    },
+    {
+      "file": "20f4ba06bdfeb0c324dbec48e3f789bb5a53154530d33c3958ec8d8b583bd484.jpeg",
+      "label": "Fritz & Frida pudins e gelatinas",
+      "itemCount": 14,
+      "items": [
+        {
+          "codeRaw": "155737",
+          "price": 1.89,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "133555",
+          "price": 1.89,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "155738",
+          "price": 1.89,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "135539",
+          "price": 1.89,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "135550",
+          "price": 1.89,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "154684",
+          "price": 1.49,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "165055",
+          "price": 1.09,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "165059",
+          "price": 0.95,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "154686",
+          "price": 1.49,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "154687",
+          "price": 1.49,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "154685",
+          "price": 1.49,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "165058",
+          "price": 1.15,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "165060",
+          "price": 1.95,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "154688",
+          "price": 1.49,
+          "priceUnit": "un"
+        }
+      ]
+    },
+    {
+      "file": "27cc531b3e41f3638b761b83cb3214ec0d0f84eee483ef44c7a5ace65636bd3b.jpeg",
+      "label": "Ceratti",
+      "itemCount": 10,
+      "items": [
+        {
+          "codeRaw": "134.352",
+          "price": 15.99,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "137.396",
+          "price": 89.99,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "113.909",
+          "price": 25.99,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "113.910",
+          "price": 25.99,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "83.241",
+          "price": 10.99,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "113.903",
+          "price": 9.99,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "156.435",
+          "price": 15.99,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "122.787",
+          "price": 85.49,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "133.935",
+          "price": 48.49,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "134.535",
+          "price": 21.99,
+          "priceUnit": "un"
+        }
+      ]
+    },
+    {
+      "file": "9dcc02975b0e741d20a456481a02da8a69c87e77a4b3015100537d35573ab175.jpeg",
+      "label": "BR Spices",
+      "itemCount": 7,
+      "items": [
+        {
+          "codeRaw": "159.756",
+          "price": 6.49,
+          "priceUnit": "un",
+          "packText": "CX C/12 UN"
+        },
+        {
+          "codeRaw": "159.755",
+          "price": 10.99,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "136.628",
+          "price": 11.49,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "160.016",
+          "price": 11.49,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "166.048",
+          "price": 11.75,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "166.044",
+          "price": 11.99,
+          "priceUnit": "un"
+        },
+        {
+          "codeRaw": "166.038",
+          "price": 11.99,
+          "priceUnit": "un"
+        }
+      ]
+    },
+    {
+      "file": "7c167d7eec20c0937d3d890c10c18460f0db62c8c8045243b0e4fe6675d2e9bb.jpeg",
+      "label": "Lamb Weston batata crisscut",
+      "itemCount": 1,
+      "items": [
+        {
+          "codeRaw": "108624",
+          "price": 19.39,
+          "priceUnit": "kg"
+        }
+      ],
+      "lambWeston": {
+        "boxPrice": 193.9,
+        "priceType": "bundle",
+        "productExpiryDate": "14/12/2026"
+      }
+    },
+    {
+      "file": "c78e2ff2384447322de2b4b36d9bee974d12361be7a8ce367e189423f4c72c7d.jpeg",
+      "label": "Rocha",
+      "itemCount": 20,
+      "items": [
+        {
+          "codeRaw": "168.90",
+          "price": 2.99
+        },
+        {
+          "codeRaw": "94.2",
+          "price": 5.79
+        },
+        {
+          "codeRaw": "169.115",
+          "price": 2.99
+        },
+        {
+          "codeRaw": "169.114",
+          "price": 2.29
+        },
+        {
+          "codeRaw": "168.99",
+          "price": 4.79
+        },
+        {
+          "codeRaw": "168.97",
+          "price": 4.79
+        },
+        {
+          "codeRaw": "168.98",
+          "price": 3.79
+        },
+        {
+          "codeRaw": "168.92",
+          "price": 3.29
+        },
+        {
+          "codeRaw": "169.109",
+          "price": 2.69
+        },
+        {
+          "codeRaw": "168.200",
+          "price": 8.49
+        },
+        {
+          "codeRaw": "168.193",
+          "price": 3.49
+        },
+        {
+          "codeRaw": "168.195",
+          "price": 3.49
+        },
+        {
+          "codeRaw": "169.108",
+          "price": 3.19
+        },
+        {
+          "codeRaw": "169.110",
+          "price": 4.19
+        },
+        {
+          "codeRaw": "168.132",
+          "price": 2.79
+        },
+        {
+          "codeRaw": "169.112",
+          "price": 3.99
+        },
+        {
+          "codeRaw": "168.83",
+          "price": 5.79
+        },
+        {
+          "codeRaw": "169.107",
+          "price": 6.99
+        },
+        {
+          "codeRaw": "168.105",
+          "price": 4.89
+        },
+        {
+          "codeRaw": "169.113",
+          "price": 3.99
+        }
+      ],
+      "ambiguousCodes": ["168.90", "94.2"]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+:root {
+  --cm-font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --cm-font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --cm-font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --text-display: 64px;
+  --lh-display: 1;
+  --ls-display: -0.03em;
+  --text-h1: 44px;
+  --lh-h1: 1.05;
+  --ls-h1: -0.025em;
+  --text-h2: 32px;
+  --lh-h2: 1.1;
+  --ls-h2: -0.02em;
+  --text-h3: 22px;
+  --lh-h3: 1.25;
+  --text-body: 17px;
+  --lh-body: 1.55;
+  --text-small: 14px;
+  --lh-small: 1.5;
+  --text-label: 12px;
+  --ls-label: 0.1em;
+  --text-wordmark-ls: -0.035em;
+}
+@media (max-width: 640px) {
+  :root {
+    --text-display: 40px;
+    --text-h1: 32px;
+    --text-h2: 24px;
+    --text-h3: 20px;
+    --text-body: 16px;
+  }
+}

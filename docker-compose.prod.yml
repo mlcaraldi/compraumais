@@ -1,0 +1,105 @@
+# Produção em uma VM: app, worker, banco, HTTPS e backup.
+# Uso: cp .env.prod.example .env.prod && docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+x-app: &app
+  build: .
+  image: compramais:latest
+  restart: unless-stopped
+  env_file: .env.prod
+  environment:
+    DATABASE_URL: postgres://compramais:${POSTGRES_PASSWORD}@db:5432/compramais
+    STORAGE_DIR: /app/storage
+  volumes:
+    - storage:/app/storage
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  app:
+    <<: *app
+    # migrations, seed e primeiro admin (ADMIN_EMAIL/ADMIN_PASSWORD) antes de subir
+    command: ["sh", "-c", "pnpm predeploy && pnpm start"]
+    environment:
+      DATABASE_URL: postgres://compramais:${POSTGRES_PASSWORD}@db:5432/compramais
+      STORAGE_DIR: /app/storage
+      JOB_RUNNER: pgboss
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3000/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  worker:
+    <<: *app
+    command: ["pnpm", "exec", "tsx", "worker/index.ts"]
+    depends_on:
+      app:
+        condition: service_healthy
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: compramais
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: compramais
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U compramais -d compramais"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+  backup:
+    image: postgres:16
+    restart: unless-stopped
+    entrypoint: ["bash", "/deploy/backup-loop.sh"]
+    environment:
+      PGHOST: db
+      PGUSER: compramais
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: compramais
+      BACKUP_BUCKET: ${BACKUP_BUCKET:-}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-sa-east-1}
+      STORAGE_DIR: /storage
+      BACKUP_LOCAL_DIR: /backups
+    volumes:
+      - ./deploy:/deploy:ro
+      - storage:/storage:ro
+      - backups:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  storage:
+  backups:
+  caddy_data:
+  caddy_config:

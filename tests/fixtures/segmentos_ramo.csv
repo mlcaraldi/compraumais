@@ -1,0 +1,53 @@
+ramo_atividade,segmento,tem_receitas_v1,clientes_na_planilha
+RESTAURANTE TRADICIONAL,restaurante,sim,48
+FAST FOOD EMPRATADO,restaurante,sim,11
+FAST FOOD BUFFET,restaurante,sim,4
+RESTAURANTE POPULAR,restaurante,sim,2
+RESTAURANTE JAPONES,restaurante,sim,2
+RESTAURANTE BRASILEIRO,restaurante,sim,1
+RESTAURANTE ITALIANO,restaurante,sim,1
+RESTAURANTE GOURMET,restaurante,sim,1
+RESTAURANTE SELF SERVICE,restaurante,sim,1
+CHURRASCARIA,restaurante,sim,2
+BUFFET,restaurante,sim,1
+BUFFET EVENTOS,restaurante,sim,3
+COZINHA INDUSTRIAL,refeicoes_coletivas,sim,8
+REFEICOES COLETIVAS- AUTO GESTAO,refeicoes_coletivas,sim,3
+LANCHONETE TRADICIONAL,lanches,sim,24
+HAMBURGUERIA,lanches,sim,12
+LANCHONETE POPULAR,lanches,sim,4
+FOOD TRUCK,lanches,sim,2
+LANCHONETE PASTELARIA,lanches,sim,2
+LANCHONETE HAMBURGUERIA,lanches,sim,1
+PIZZARIA TRADICIONAL,pizzaria,sim,6
+PIZZARIA DELIVERY,pizzaria,sim,1
+PIZZARIA,pizzaria,sim,1
+PIZZARIA CONTEMPORANEA,pizzaria,sim,1
+CONFEITARIA,panificacao,sim,15
+PADARIA TRADICIONAL,panificacao,sim,12
+PADARIA ESPECIALISTA - BOULANGERIE,panificacao,sim,7
+PADARIA ESPECIALIZADA,panificacao,sim,4
+PADARIA CONVENIENCIA,panificacao,sim,3
+LANCHONETE / PADARIA,panificacao,sim,1
+BAR POPULAR,bar_cafeteria,sim,7
+BAR GOURMET,bar_cafeteria,sim,4
+BAR TRADICIONAL / BOTEQUIM,bar_cafeteria,sim,2
+BAR CAFETERIA,bar_cafeteria,sim,2
+CAFETERIA,bar_cafeteria,sim,1
+SORVETERIA,sorveteria,sim,4
+ATACADO E CASH E CARRY REGIONAL,revenda,nao,4
+SUPERMERCADO 5 A 9 CHECK OUTS,revenda,nao,2
+MERCADO 1 A 4 CHECK OUTS,revenda,nao,2
+SUPERMERCADO REGIONAL MAIS DE 9 CHECKOUT,revenda,nao,1
+A.S.REGIONAL,revenda,nao,2
+LOJA DE CONVENIENCIA,revenda,nao,2
+MERCEARIA,revenda,nao,1
+GRANDES REDES,revenda,nao,1
+DISTRIBUIDORES,revenda,nao,1
+HORTI-FRUTI,revenda,nao,3
+ACOUGUE,revenda,nao,1
+PEIXARIA,revenda,nao,1
+INDUSTRA DE ALIMENTOS,industria,nao,5
+OUTROS RAMOS NAO ALIMENTICIOS,outros,nao,10
+CONSUMIDOR FINAL,outros,nao,2
+,sem_ramo,nao,2

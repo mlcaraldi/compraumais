@@ -1,0 +1,40 @@
+:root {
+  --cm-verde-noite: #1f2a24;
+  --cm-farinha: #f7f3ec;
+  --cm-brasa: #d9822b;
+  --cm-brasa-escura: #a35512;
+  --cm-manjericao: #3f6b4e;
+  --cm-manjericao-claro: #dcebd9;
+  --cm-sal: #fffdf9;
+  --cm-linho: #e8e0d2;
+  --cm-borda-forte: #c9bfae;
+  --cm-grafite: #5b6660;
+  --cm-noite-2: #2a3830;
+  --cm-noite-borda: #4a5952;
+  --cm-sobre-escuro-1: #c9d1cc;
+  --cm-sobre-escuro-2: #b9c2bc;
+  --cm-whats-fundo: #ece5da;
+  --cm-branco: #ffffff;
+  --cm-foco: rgba(217, 130, 43, 0.25);
+  --cm-overlay: rgba(31, 42, 36, 0.45);
+
+  --bg-page: var(--cm-farinha);
+  --surface-card: var(--cm-sal);
+  --surface-inverse: var(--cm-verde-noite);
+  --surface-inverse-2: var(--cm-noite-2);
+  --fg-1: var(--cm-verde-noite);
+  --fg-2: var(--cm-grafite);
+  --fg-inverse-1: var(--cm-farinha);
+  --fg-inverse-2: var(--cm-sobre-escuro-2);
+  --fg-accent: var(--cm-brasa-escura);
+  --fg-accent-on-dark: var(--cm-brasa);
+  --fg-success: var(--cm-manjericao);
+  --border-1: var(--cm-linho);
+  --border-strong: var(--cm-borda-forte);
+  --border-on-dark: var(--cm-noite-borda);
+  --accent: var(--cm-brasa);
+  --btn-primary-bg: var(--cm-brasa);
+  --btn-primary-fg: var(--cm-verde-noite);
+  --placeholder-stripes: repeating-linear-gradient(135deg, #e8e0d2 0 10px, #efe9de 10px 20px);
+  --placeholder-stripes-dark: repeating-linear-gradient(135deg, #2e3c34 0 8px, #27332c 8px 16px);
+}

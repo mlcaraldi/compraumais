@@ -1,7 +1,12 @@
 data/real/
-storage/
+/storage/
 .env
 .env.*
 !.env.example
 node_modules/
 .next/
+*.tsbuildinfo
+test-results/
+playwright-report/
+/storage-test/
+!.env.prod.example

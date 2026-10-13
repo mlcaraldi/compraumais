@@ -1,0 +1,1 @@
+ALTER TABLE "suggestion_runs" ADD COLUMN "output_meta" jsonb DEFAULT '{}'::jsonb NOT NULL;
