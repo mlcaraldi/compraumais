@@ -54,4 +54,10 @@ test("login, ver sugestões, editar a mensagem, copiar e registrar o resultado",
   await page.getByRole("button", { name: "Registrar" }).click();
   await expect(page.getByText("Resultado registrado.")).toBeVisible();
   await expect(page.getByText("Resultados registrados")).toBeVisible();
+
+  // o painel conta 1 mensagem enviada e 1 aceite
+  await page.goto("/painel");
+  await expect(page.getByTestId("metric-Aceites")).toHaveText("1");
+  await expect(page.getByTestId("metric-Mensagens enviadas")).toHaveText("1");
+  await expect(page.getByTestId("metric-Taxa de aceite")).toHaveText("100%");
 });

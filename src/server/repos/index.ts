@@ -10,3 +10,4 @@ export * as recipesRepo from "./recipes";
 export * as ordersRepo from "./orders";
 export * as promotionsRepo from "./promotions";
 export * as suggestionsRepo from "./suggestions";
+export * as dashboardRepo from "./dashboard";

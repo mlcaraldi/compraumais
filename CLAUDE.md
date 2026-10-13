@@ -70,7 +70,7 @@ Next.js (App Router) + TypeScript strict, PostgreSQL 16 + Drizzle, pg-boss (work
 - [x] T10 Importador de encartes
 - [x] T11 Motor de sugestões
 - [x] T12 Tela do pedido e resultado
-- [ ] T13 Painel
+- [x] T13 Painel
 - [ ] T14 Ciclo de vida das ofertas
 - [ ] T15 Carga inicial e demo
 - [ ] T16 Deploy
