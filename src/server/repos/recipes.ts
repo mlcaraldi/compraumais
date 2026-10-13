@@ -377,3 +377,16 @@ export async function removeCustomerRecipe(db: Db, tenantId: string, id: string)
     .delete(customerRecipes)
     .where(and(eq(customerRecipes.tenantId, tenantId), eq(customerRecipes.id, id)));
 }
+
+export async function setIngredientCommodity(
+  db: Db,
+  tenantId: string,
+  ingredientId: string,
+  isCommodity: boolean,
+) {
+  requireTenant(tenantId);
+  await db
+    .update(ingredients)
+    .set({ isCommodity })
+    .where(and(eq(ingredients.tenantId, tenantId), eq(ingredients.id, ingredientId)));
+}
