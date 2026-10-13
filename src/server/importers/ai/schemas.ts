@@ -25,3 +25,32 @@ export const OrderExtractionSchema = z.object({
   ),
 });
 export type OrderExtraction = z.infer<typeof OrderExtractionSchema>;
+
+/** Saída estruturada do agente que lê encartes de oferta (imagem ou PDF). */
+export const PromotionExtractionSchema = z.object({
+  title: z.string().nullable(),
+  supplierBrand: z.string().nullable(),
+  offerValidity: z.object({
+    startsOn: z.string().nullable(),
+    endsOn: z.string().nullable(),
+    evidence: z.string().nullable(),
+  }),
+  targetSegmentsHint: z.array(z.string()),
+  items: z.array(
+    z.object({
+      codeRaw: z.string().nullable(),
+      description: z.string(),
+      packText: z.string().nullable(),
+      price: z.number(),
+      priceUnit: z.enum(["un", "pct", "kg", "cx", "outro"]),
+      boxPrice: z.number().nullable(),
+      regularPrice: z.number().nullable(),
+      priceType: z.enum(["unit_price", "min_qty", "bundle", "other"]),
+      minQty: z.number().nullable(),
+      conditionText: z.string().nullable(),
+      productExpiryDate: z.string().nullable(),
+      confidence: z.number(),
+    }),
+  ),
+});
+export type PromotionExtraction = z.infer<typeof PromotionExtractionSchema>;

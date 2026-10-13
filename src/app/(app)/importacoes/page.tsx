@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/core/Badge";
 import { Card } from "@/components/core/Card";
+import { AutoRefresh } from "@/components/AutoRefresh";
 import { PageHeader } from "@/components/PageHeader";
 import { requireUser } from "@/server/auth/current-user";
 import { getDb } from "@/server/db/client";
@@ -14,8 +15,10 @@ const TONE = { done: "success-soft", failed: "brasa", review: "neutral" } as con
 export default async function ImportacoesPage() {
   const user = await requireUser();
   const jobs = await importsRepo.listImportJobs(getDb(), user.tenantId);
+  const busy = jobs.some(({ job }) => job.status === "queued" || job.status === "extracting");
   return (
     <>
+      {busy && <AutoRefresh />}
       <PageHeader
         title="Importações"
         subtitle="Cada arquivo importado passa por revisão antes de entrar no sistema."

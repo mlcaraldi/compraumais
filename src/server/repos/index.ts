@@ -8,3 +8,4 @@ export * as auditRepo from "./audit";
 export * as productsRepo from "./products";
 export * as recipesRepo from "./recipes";
 export * as ordersRepo from "./orders";
+export * as promotionsRepo from "./promotions";

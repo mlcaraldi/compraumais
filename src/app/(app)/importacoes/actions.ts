@@ -16,6 +16,13 @@ import {
   setOrderCustomer,
   setOrderRowStatus,
 } from "@/server/services/import-order";
+import {
+  confirmPromotionImport,
+  editPromotionHeader,
+  editPromotionItem,
+  linkPromotionItem,
+  setPromotionRowStatus,
+} from "@/server/services/import-promotion";
 import { confirmRecipeImport } from "@/server/services/import-recipes";
 import {
   confirmProductImport,
@@ -149,6 +156,15 @@ export async function confirmAction(formData: FormData) {
     revalidatePath("/pedidos");
     redirect(`/pedidos/${orderId}`);
   }
+  if (job?.kind === "promotion") {
+    try {
+      await confirmPromotionImport(getDb(), user.tenantId, jobId, user.id);
+    } catch (e) {
+      return back(jobId, e instanceof Error ? e.message : "Erro");
+    }
+    revalidatePath("/ofertas");
+    back(jobId);
+  }
   try {
     if (job?.kind === "products")
       await confirmProductImport(getDb(), user.tenantId, jobId, user.id);
@@ -241,5 +257,64 @@ export async function retryExtractAction(formData: FormData) {
     error: null,
   });
   await enqueueExtract({ tenantId: user.tenantId, jobId });
+  back(jobId);
+}
+
+export async function promotionHeaderAction(formData: FormData) {
+  const user = await requireUser();
+  const jobId = String(formData.get("jobId"));
+  try {
+    await editPromotionHeader(getDb(), user.tenantId, jobId, {
+      name: String(formData.get("name") ?? ""),
+      startsOn: String(formData.get("startsOn") ?? ""),
+      endsOn: String(formData.get("endsOn") ?? ""),
+    });
+  } catch (e) {
+    back(jobId, e instanceof Error ? e.message : "Erro");
+  }
+  back(jobId);
+}
+
+export async function promotionItemAction(formData: FormData) {
+  const user = await requireUser();
+  const jobId = String(formData.get("jobId"));
+  try {
+    const price = parseMoneyCents(String(formData.get("price") ?? ""));
+    const unit = String(formData.get("priceUnit") ?? "");
+    await editPromotionItem(getDb(), user.tenantId, String(formData.get("rowId")), {
+      code: String(formData.get("code") ?? ""),
+      description: String(formData.get("description") ?? ""),
+      packText: String(formData.get("packText") ?? ""),
+      priceCents: price ?? undefined,
+      priceUnit: ["un", "pct", "kg", "cx"].includes(unit) ? (unit as "un") : "",
+    });
+  } catch (e) {
+    back(jobId, e instanceof Error ? e.message : "Erro");
+  }
+  back(jobId);
+}
+
+export async function promotionLinkAction(formData: FormData) {
+  const user = await requireUser();
+  const jobId = String(formData.get("jobId"));
+  const productId = String(formData.get("productId") ?? "");
+  try {
+    if (!productId) throw new Error("Escolha um produto.");
+    await linkPromotionItem(getDb(), user.tenantId, String(formData.get("rowId")), productId);
+  } catch (e) {
+    back(jobId, e instanceof Error ? e.message : "Erro");
+  }
+  back(jobId);
+}
+
+export async function promotionRowStatusAction(formData: FormData) {
+  const user = await requireUser();
+  const jobId = String(formData.get("jobId"));
+  const op = formData.get("op") === "accept" ? "accepted" : "rejected";
+  try {
+    await setPromotionRowStatus(getDb(), user.tenantId, String(formData.get("rowId")), op);
+  } catch (e) {
+    back(jobId, e instanceof Error ? e.message : "Erro");
+  }
   back(jobId);
 }

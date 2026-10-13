@@ -41,3 +41,11 @@
 2026-10-13 | Data do pedido guardada às 12:00 em Brasília | evita virar o dia ao converter para UTC; o Brasil não tem horário de verão desde 2019.
 2026-10-13 | Extratores padrão (`order`, `promotion`) carregados sob demanda em `resolveExtractor`, sem sobrescrever os registrados à mão | worker e modo inline não dependem de efeitos colaterais de import.
 2026-10-13 | O teste "tipo sem extrator" de `jobs.test.ts` passou a usar o tipo `customers` | `order` ganhou extrator padrão na T09; a intenção do teste (tipo sem extrator falha com mensagem) continua a mesma.
+2026-10-13 | Vigência do encarte só vale com `evidence` impressa; sem trecho, usa hoje e hoje + `promotionDefaultDays` com aviso "vigência sugerida" | "validade do produto" não é vigência da oferta (regra do domínio) e o plano pede datas obrigatórias no cabeçalho.
+2026-10-13 | Item de encarte sem código válido (ausente, ambíguo ou malformado) bloqueia a confirmação até vincular a um produto (busca por similaridade), digitar o código completo ou rejeitar | código ambíguo nunca casa sozinho; o encarte Rocha tem vários códigos com 2 casas após o ponto (168.99, 168.83 etc.), todos tratados como ambíguos pela regra 6.5.
+2026-10-13 | Unidade "outro" devolvida pela IA vira `null` e bloqueia até o usuário escolher un/pct/kg/cx | a tabela `promotion_items` só aceita essas quatro unidades.
+2026-10-13 | Produto novo vindo de encarte herda a marca do encarte, a unidade do preço como `sale_unit` e não recebe preço de lista | preço de oferta fica só em `promotion_items` (plano T10).
+2026-10-13 | Oferta confirmada com fim anterior a hoje já nasce `expired` | evita que o motor trate como ativa uma oferta vencida enquanto o job diário (T14) não roda.
+2026-10-13 | Upload em lote de encartes limitado a 4 MB no total por envio (limite de corpo da Vercel); cada arquivo vira uma importação própria | o plano pede um `import_job` por arquivo; em servidor próprio o limite pode subir.
+2026-10-13 | `tests/ai/encartes.manifest.json` traz os 6 encartes do plano com todos os itens que consegui ler nas imagens (códigos, preços e unidades transcritos por Claude) | o plano só nomeia alguns itens por encarte; o teste mede ≥ 95% de acerto sobre a transcrição e acusa divergência para revisão humana.
+

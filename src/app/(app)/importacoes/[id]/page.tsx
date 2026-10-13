@@ -21,10 +21,11 @@ import { formatCents } from "@/server/normalize";
 import type { ProductRowData } from "@/server/services/import-products";
 import type { RecipeItemRowData, RecipeRowData } from "@/server/services/import-recipes";
 import type { RowWarning } from "@/server/importers/types";
-import { documentsRepo, importsRepo, segmentsRepo } from "@/server/repos";
+import { documentsRepo, importsRepo, recipesRepo, segmentsRepo } from "@/server/repos";
 import type { CustomerJobMeta, CustomerRowData } from "@/server/services/import-customers";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { OrderReview } from "../order-review";
+import { PromotionReview } from "../promotion-review";
 import {
   confirmAction,
   remapAction,
@@ -96,6 +97,74 @@ export default async function ImportReviewPage({
             rows={rows}
             model={job.model}
             costCents={job.costCentsEstimate}
+          />
+        )}
+      </>
+    );
+  }
+  if (job.kind === "promotion") {
+    const rows = await importsRepo.listImportRows(db, user.tenantId, id);
+    const candidates: Record<string, { id: string; label: string }[]> = {};
+    if (job.status === "review") {
+      for (const r of rows) {
+        if (r.rowType !== "promotion_item" || r.matchType !== "none" || r.status === "rejected")
+          continue;
+        const d = r.data as { description: string };
+        const found = await recipesRepo.searchProductsByTrigram(
+          db,
+          user.tenantId,
+          d.description,
+          5,
+        );
+        candidates[r.id] = found.map((f) => ({
+          id: f.product.id,
+          label: `${f.product.code} · ${f.product.description}`,
+        }));
+      }
+    }
+    return (
+      <>
+        <PageHeader
+          title="Revisão do encarte"
+          subtitle={doc?.filename}
+          actions={<Badge>{STATUS_LABEL[job.status] ?? job.status}</Badge>}
+        />
+        {processing && <AutoRefresh />}
+        {processing && (
+          <Card tone="dashed" style={{ marginBottom: 16 }}>
+            A IA está lendo o encarte. Esta página atualiza sozinha.
+          </Card>
+        )}
+        {sp.erro && (
+          <Card tone="dashed" style={{ marginBottom: 16, color: "var(--fg-accent)" }}>
+            {sp.erro}
+          </Card>
+        )}
+        {job.status === "failed" && (
+          <Card tone="dashed" style={{ marginBottom: 16, color: "var(--fg-accent)" }}>
+            <p style={{ marginTop: 0 }}>{job.error}</p>
+            <form action={retryExtractAction}>
+              <input type="hidden" name="jobId" value={id} />
+              <Button type="submit" size="sm" variant="secondary">
+                Tentar de novo
+              </Button>
+            </form>
+          </Card>
+        )}
+        {job.status === "done" && (
+          <Card tone="dashed" style={{ marginBottom: 16, color: "var(--fg-success)" }}>
+            Encarte confirmado. Veja em <Link href="/ofertas">Ofertas</Link>.
+          </Card>
+        )}
+        {rows.length > 0 && (
+          <PromotionReview
+            jobId={id}
+            status={job.status}
+            doc={doc ?? null}
+            rows={rows}
+            model={job.model}
+            costCents={job.costCentsEstimate}
+            candidates={candidates}
           />
         )}
       </>
