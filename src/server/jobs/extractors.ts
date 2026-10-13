@@ -19,3 +19,21 @@ export function getExtractor(kind: string) {
 export function clearExtractors() {
   registry.clear();
 }
+
+/**
+ * Extratores padrão, carregados sob demanda para o worker e o modo inline não dependerem
+ * de efeitos colaterais de import. Um extrator registrado à mão (testes) tem prioridade.
+ */
+export async function resolveExtractor(kind: string): Promise<Extractor | undefined> {
+  const registered = registry.get(kind);
+  if (registered) return registered;
+  if (kind === "order") {
+    const { extractOrder } = await import("../services/import-order");
+    return (ctx) => extractOrder(ctx);
+  }
+  if (kind === "promotion") {
+    const { extractPromotion } = await import("../services/import-promotion");
+    return (ctx) => extractPromotion(ctx);
+  }
+  return undefined;
+}

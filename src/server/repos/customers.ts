@@ -1,4 +1,5 @@
 import { and, asc, eq, ilike, or, sql } from "drizzle-orm";
+import { normalizeText } from "../normalize/text";
 import type { Db } from "../db/client";
 import { customers } from "../db/schema";
 import { requireTenant } from "./tenant";
@@ -134,4 +135,39 @@ export async function updateCustomerContact(
     .update(customers)
     .set({ ...patch, updatedAt: new Date() })
     .where(and(eq(customers.tenantId, tenantId), eq(customers.id, id)));
+}
+
+export async function findCustomerByDocument(db: Db, tenantId: string, digits: string) {
+  requireTenant(tenantId);
+  if (!digits) return null;
+  const [row] = await db
+    .select()
+    .from(customers)
+    .where(and(eq(customers.tenantId, tenantId), eq(customers.document, digits)));
+  return row ?? null;
+}
+
+export async function findCustomerByExternalCode(db: Db, tenantId: string, code: string) {
+  requireTenant(tenantId);
+  if (!code) return null;
+  const [row] = await db
+    .select()
+    .from(customers)
+    .where(and(eq(customers.tenantId, tenantId), eq(customers.externalCode, code)));
+  return row ?? null;
+}
+
+/** Sugestões por nome (trigram); só sugere, nunca vincula. */
+export async function suggestCustomersByName(db: Db, tenantId: string, name: string, limit = 5) {
+  requireTenant(tenantId);
+  const term = normalizeText(name);
+  if (!term) return [];
+  const haystack = sql`upper(unaccent(coalesce(${customers.tradeName}, '') || ' ' || ${customers.legalName}))`;
+  const score = sql<number>`similarity(${haystack}, ${term})`;
+  return db
+    .select({ customer: customers, score })
+    .from(customers)
+    .where(and(eq(customers.tenantId, tenantId), sql`${score} > 0.2`))
+    .orderBy(sql`${score} desc`)
+    .limit(limit);
 }

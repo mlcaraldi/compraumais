@@ -320,6 +320,8 @@ export const orderLines = pgTable("order_lines", {
   rawCode: text("raw_code"),
   rawDescription: text("raw_description"),
   unit: text("unit"),
+  /** posição da linha no pedido, a partir de 0 */
+  position: integer("position").notNull().default(0),
   qty: numeric("qty").notNull(),
   unitPriceCents: integer("unit_price_cents"),
   totalCents: integer("total_cents"),

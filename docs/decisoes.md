@@ -32,3 +32,12 @@
 2026-10-07 | "Sugerir produtos" passa a usar o ranking da IA (3 melhores entre 10 candidatos por trigram, gravados como suggested por 'ai') quando `ANTHROPIC_API_KEY` existe, com queda para trigram se a IA falhar; a justificativa (`reason`) volta no schema mas não é gravada | `ingredient_products` não tem coluna para justificativa; a tela de aprovação mostra o produto e o humano decide
 2026-10-07 | Os prompts são lidos de `src/server/importers/ai/prompts/*.md` em tempo de execução e incluídos no build da Vercel por `outputFileTracingIncludes` | exigência do CLAUDE.md de manter prompts em arquivos
 2026-10-07 | `ADMIN_RESET_PASSWORD` redefine a senha do admin (`ADMIN_EMAIL`) no predeploy | Marcelo não lembrava a senha da homologação; a variável deve ser removida após o deploy.
+2026-10-13 | `order_lines.position` (migration 0003) guarda a ordem das linhas do pedido | uuid não preserva ordem de inserção e a tela precisa mostrar as linhas como no documento.
+2026-10-13 | Produto novo vindo de pedido não recebe `list_price_cents` | o preço do pedido é o negociado com aquele cliente, não o de lista; o motor mostra "consultar preço" em vez de inventar.
+2026-10-13 | Pedido confirmado nunca sobrescreve produto existente (`insertNewProducts`, onConflictDoNothing) | o cadastro do catálogo tem prioridade sobre a descrição do pedido.
+2026-10-13 | Código de linha ambíguo ou inválido bloqueia a confirmação até o usuário corrigir ou rejeitar a linha | regra do domínio: código ambíguo nunca casa sozinho.
+2026-10-13 | Cliente do pedido: documento, depois código, depois nome (só sugere); sem vínculo bloqueia a confirmação | o plano manda casar por documento/código e só sugerir por nome.
+2026-10-13 | "Digitar pedido" usa o mesmo pipeline de revisão (documento JSON sintético) e confirma na hora se não houver pendência | gera o mesmo resultado do upload, sem IA, reaproveitando validações e auditoria.
+2026-10-13 | Data do pedido guardada às 12:00 em Brasília | evita virar o dia ao converter para UTC; o Brasil não tem horário de verão desde 2019.
+2026-10-13 | Extratores padrão (`order`, `promotion`) carregados sob demanda em `resolveExtractor`, sem sobrescrever os registrados à mão | worker e modo inline não dependem de efeitos colaterais de import.
+2026-10-13 | O teste "tipo sem extrator" de `jobs.test.ts` passou a usar o tipo `customers` | `order` ganhou extrator padrão na T09; a intenção do teste (tipo sem extrator falha com mensagem) continua a mesma.

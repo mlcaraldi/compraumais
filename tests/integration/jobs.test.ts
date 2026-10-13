@@ -24,7 +24,7 @@ afterAll(async () => {
   await closeDb();
 });
 
-async function newJob(kind: "products" | "order" = "products") {
+async function newJob(kind: "products" | "customers" = "products") {
   const { document } = await saveDocument(ctx.db, ctx.tenantId, {
     buffer: Buffer.from(`conteúdo ${++n}`),
     filename: `arquivo-${n}.csv`,
@@ -76,11 +76,12 @@ describe("runExtractJob", () => {
   });
 
   it("tipo sem extrator falha com mensagem clara", async () => {
-    const job = await newJob("order");
+    // pedido e encarte têm extrator padrão desde a T09/T10; importações de planilha não usam a fila
+    const job = await newJob("customers");
     await runExtractJob(ctx.db, { tenantId: ctx.tenantId, jobId: job.id });
     const j = await status(job.id);
     expect(j.status).toBe("failed");
-    expect(j.error).toContain("order");
+    expect(j.error).toContain("customers");
   });
 });
 

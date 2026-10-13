@@ -1,7 +1,7 @@
 import type { Db } from "../db/client";
 import { AiNullOutputError, AiRetryableError } from "../importers/ai/client";
 import { importsRepo } from "../repos";
-import { getExtractor } from "./extractors";
+import { resolveExtractor } from "./extractors";
 
 export const QUEUE_EXTRACT = "import.extract";
 export const QUEUE_SUGGESTION = "suggestion.run";
@@ -26,7 +26,7 @@ export async function runExtractJob(
   const job = await importsRepo.getImportJob(db, tenantId, jobId);
   if (!job) throw new Error(`Job ${jobId} não encontrado`);
   if (job.status === "done" || job.status === "review") return;
-  const extractor = getExtractor(job.kind);
+  const extractor = await resolveExtractor(job.kind);
   if (!extractor) {
     await importsRepo.updateImportJob(db, tenantId, jobId, {
       status: "failed",

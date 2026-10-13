@@ -23,7 +23,15 @@ import type { RecipeItemRowData, RecipeRowData } from "@/server/services/import-
 import type { RowWarning } from "@/server/importers/types";
 import { documentsRepo, importsRepo, segmentsRepo } from "@/server/repos";
 import type { CustomerJobMeta, CustomerRowData } from "@/server/services/import-customers";
-import { confirmAction, remapAction, resolveSegmentAction, rowStatusAction } from "../actions";
+import { AutoRefresh } from "@/components/AutoRefresh";
+import { OrderReview } from "../order-review";
+import {
+  confirmAction,
+  remapAction,
+  retryExtractAction,
+  resolveSegmentAction,
+  rowStatusAction,
+} from "../actions";
 import { KIND_LABEL, ROW_STATUS_LABEL, STATUS_LABEL } from "../labels";
 
 export const dynamic = "force-dynamic";
@@ -43,6 +51,56 @@ export default async function ImportReviewPage({
   const job = await importsRepo.getImportJob(db, user.tenantId, id);
   if (!job) notFound();
   const doc = await documentsRepo.getDocumentById(db, user.tenantId, job.documentId);
+  const processing = job.status === "queued" || job.status === "extracting";
+  if (job.kind === "order") {
+    const rows = await importsRepo.listImportRows(db, user.tenantId, id);
+    return (
+      <>
+        <PageHeader
+          title="Revisão do pedido"
+          subtitle={doc?.filename}
+          actions={<Badge>{STATUS_LABEL[job.status] ?? job.status}</Badge>}
+        />
+        {processing && <AutoRefresh />}
+        {processing && (
+          <Card tone="dashed" style={{ marginBottom: 16 }}>
+            A IA está lendo o pedido. Esta página atualiza sozinha.
+          </Card>
+        )}
+        {sp.erro && (
+          <Card tone="dashed" style={{ marginBottom: 16, color: "var(--fg-accent)" }}>
+            {sp.erro}
+          </Card>
+        )}
+        {job.status === "failed" && (
+          <Card tone="dashed" style={{ marginBottom: 16, color: "var(--fg-accent)" }}>
+            <p style={{ marginTop: 0 }}>{job.error}</p>
+            <form action={retryExtractAction}>
+              <input type="hidden" name="jobId" value={id} />
+              <Button type="submit" size="sm" variant="secondary">
+                Tentar de novo
+              </Button>
+            </form>
+          </Card>
+        )}
+        {job.status === "done" && (
+          <Card tone="dashed" style={{ marginBottom: 16, color: "var(--fg-success)" }}>
+            Pedido confirmado. Veja em <Link href="/pedidos">Pedidos</Link>.
+          </Card>
+        )}
+        {rows.length > 0 && (
+          <OrderReview
+            jobId={id}
+            status={job.status}
+            doc={doc ?? null}
+            rows={rows}
+            model={job.model}
+            costCents={job.costCentsEstimate}
+          />
+        )}
+      </>
+    );
+  }
   const meta = (job.rawOutput ?? {}) as Partial<CustomerJobMeta>;
   const counts = await importsRepo.countImportRowsByStatus(db, user.tenantId, id);
   const pending = counts.pending ?? 0;

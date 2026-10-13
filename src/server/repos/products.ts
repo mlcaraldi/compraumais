@@ -1,4 +1,4 @@
-import { and, asc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, asc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import type { Db } from "../db/client";
 import { products } from "../db/schema";
 import { requireTenant } from "./tenant";
@@ -108,4 +108,26 @@ export async function upsertProducts(db: Db, tenantId: string, rows: ProductUpse
         },
       });
   }
+}
+
+export async function findProductIdsByCodes(db: Db, tenantId: string, codes: string[]) {
+  requireTenant(tenantId);
+  const out = new Map<string, string>();
+  if (!codes.length) return out;
+  const rows = await db
+    .select({ id: products.id, code: products.code })
+    .from(products)
+    .where(and(eq(products.tenantId, tenantId), inArray(products.code, codes)));
+  for (const r of rows) out.set(r.code, r.id);
+  return out;
+}
+
+/** Cria produtos novos sem tocar nos que já existem (pedido e encarte nunca sobrescrevem cadastro). */
+export async function insertNewProducts(db: Db, tenantId: string, rows: ProductUpsert[]) {
+  requireTenant(tenantId);
+  if (!rows.length) return;
+  await db
+    .insert(products)
+    .values(rows.map((r) => ({ ...r, tenantId })))
+    .onConflictDoNothing({ target: [products.tenantId, products.code] });
 }

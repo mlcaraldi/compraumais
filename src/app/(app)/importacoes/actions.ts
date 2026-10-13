@@ -7,6 +7,15 @@ import { getDb } from "@/server/db/client";
 import { CUSTOMER_FIELDS, type CustomerMapping } from "@/server/importers/spreadsheet/customers";
 import { PRODUCT_FIELDS, type ProductMapping } from "@/server/importers/spreadsheet/products";
 import { importsRepo } from "@/server/repos";
+import { enqueueExtract, enqueueSuggestion } from "@/server/jobs/queue";
+import { parseMoneyCents } from "@/server/normalize";
+import {
+  confirmOrderImport,
+  editOrderHeader,
+  editOrderLine,
+  setOrderCustomer,
+  setOrderRowStatus,
+} from "@/server/services/import-order";
 import { confirmRecipeImport } from "@/server/services/import-recipes";
 import {
   confirmProductImport,
@@ -129,6 +138,17 @@ export async function confirmAction(formData: FormData) {
   const user = await requireUser();
   const jobId = String(formData.get("jobId"));
   const job = await importsRepo.getImportJob(getDb(), user.tenantId, jobId);
+  if (job?.kind === "order") {
+    let orderId: string;
+    try {
+      ({ orderId } = await confirmOrderImport(getDb(), user.tenantId, jobId, user.id));
+    } catch (e) {
+      return back(jobId, e instanceof Error ? e.message : "Erro");
+    }
+    await enqueueSuggestion({ tenantId: user.tenantId, orderId });
+    revalidatePath("/pedidos");
+    redirect(`/pedidos/${orderId}`);
+  }
   try {
     if (job?.kind === "products")
       await confirmProductImport(getDb(), user.tenantId, jobId, user.id);
@@ -141,5 +161,85 @@ export async function confirmAction(formData: FormData) {
   revalidatePath("/clientes");
   revalidatePath("/produtos");
   revalidatePath("/receitas");
+  back(jobId);
+}
+
+function numberFrom(raw: FormDataEntryValue | null) {
+  const n = Number(String(raw ?? "").replace(",", "."));
+  return Number.isFinite(n) ? n : undefined;
+}
+
+export async function orderCustomerAction(formData: FormData) {
+  const user = await requireUser();
+  const jobId = String(formData.get("jobId"));
+  const customerId = String(formData.get("customerId") ?? "");
+  const code = String(formData.get("code") ?? "");
+  try {
+    if (!customerId && !code.trim()) throw new Error("Escolha uma sugestão ou digite o código.");
+    await setOrderCustomer(getDb(), user.tenantId, jobId, {
+      customerId: customerId || undefined,
+      code,
+    });
+  } catch (e) {
+    back(jobId, e instanceof Error ? e.message : "Erro");
+  }
+  back(jobId);
+}
+
+export async function orderHeaderAction(formData: FormData) {
+  const user = await requireUser();
+  const jobId = String(formData.get("jobId"));
+  try {
+    await editOrderHeader(getDb(), user.tenantId, jobId, {
+      orderNumber: String(formData.get("orderNumber") ?? ""),
+      issuedAt: String(formData.get("issuedAt") ?? ""),
+    });
+  } catch (e) {
+    back(jobId, e instanceof Error ? e.message : "Erro");
+  }
+  back(jobId);
+}
+
+export async function orderLineAction(formData: FormData) {
+  const user = await requireUser();
+  const jobId = String(formData.get("jobId"));
+  try {
+    const price = parseMoneyCents(String(formData.get("price") ?? ""));
+    await editOrderLine(getDb(), user.tenantId, String(formData.get("rowId")), {
+      code: String(formData.get("code") ?? ""),
+      description: String(formData.get("description") ?? ""),
+      qty: numberFrom(formData.get("qty")),
+      unitPriceCents: price ?? undefined,
+    });
+  } catch (e) {
+    back(jobId, e instanceof Error ? e.message : "Erro");
+  }
+  back(jobId);
+}
+
+export async function orderRowStatusAction(formData: FormData) {
+  const user = await requireUser();
+  const jobId = String(formData.get("jobId"));
+  const op = formData.get("op") === "accept" ? "accepted" : "rejected";
+  try {
+    await setOrderRowStatus(getDb(), user.tenantId, String(formData.get("rowId")), op);
+  } catch (e) {
+    back(jobId, e instanceof Error ? e.message : "Erro");
+  }
+  back(jobId);
+}
+
+/** Recoloca na fila uma leitura por IA que falhou. */
+export async function retryExtractAction(formData: FormData) {
+  const user = await requireUser();
+  const jobId = String(formData.get("jobId"));
+  const job = await importsRepo.getImportJob(getDb(), user.tenantId, jobId);
+  if (!job || job.status !== "failed" || !["order", "promotion"].includes(job.kind))
+    back(jobId, "Esta importação não pode ser repetida.");
+  await importsRepo.updateImportJob(getDb(), user.tenantId, jobId, {
+    status: "queued",
+    error: null,
+  });
+  await enqueueExtract({ tenantId: user.tenantId, jobId });
   back(jobId);
 }

@@ -66,7 +66,7 @@ Next.js (App Router) + TypeScript strict, PostgreSQL 16 + Drizzle, pg-boss (work
 - [x] T06 Telas de clientes e produtos
 - [x] T07 Receitas
 - [x] T08 Fila de jobs e cliente de IA
-- [ ] T09 Importador de pedido
+- [x] T09 Importador de pedido
 - [ ] T10 Importador de encartes
 - [ ] T11 Motor de sugestões
 - [ ] T12 Tela do pedido e resultado
