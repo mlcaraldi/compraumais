@@ -465,6 +465,10 @@ export const suggestionRuns = pgTable("suggestion_runs", {
     .references(() => orders.id, { onDelete: "cascade" }),
   engineVersion: text("engine_version").notNull(),
   settingsSnapshot: jsonb("settings_snapshot").notNull(),
+  /** avisos e pendências do motor nesta rodada: `{ warnings: [], pendencies: [] }` */
+  outputMeta: jsonb("output_meta")
+    .notNull()
+    .default(sql`'{}'::jsonb`),
   createdAt: createdAt(),
 });
 

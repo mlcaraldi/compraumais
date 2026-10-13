@@ -53,8 +53,8 @@ export async function runExtractJob(
   }
 }
 
-/** Preenchido na T11 pelo motor de sugestões. */
+/** Gera as sugestões de um pedido confirmado (o motor roda em `services/suggestions`). */
 export async function runSuggestionJob(db: Db, data: SuggestionJobData) {
-  void [db, data];
-  throw new Error("O motor de sugestões ainda não foi implementado");
+  const { runSuggestionsForOrder } = await import("../services/suggestions");
+  await runSuggestionsForOrder(db, data.tenantId, data.orderId);
 }

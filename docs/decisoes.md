@@ -49,3 +49,10 @@
 2026-10-13 | Upload em lote de encartes limitado a 4 MB no total por envio (limite de corpo da Vercel); cada arquivo vira uma importação própria | o plano pede um `import_job` por arquivo; em servidor próprio o limite pode subir.
 2026-10-13 | `tests/ai/encartes.manifest.json` traz os 6 encartes do plano com todos os itens que consegui ler nas imagens (códigos, preços e unidades transcritos por Claude) | o plano só nomeia alguns itens por encarte; o teste mede ≥ 95% de acerto sobre a transcrição e acusa divergência para revisão humana.
 
+2026-10-13 | Motor: a data do pedido ancora cobertura e regularidade; `now` só mede recusas recentes | Pedidos antigos reimportados geram o mesmo resultado que na época e o motor segue puro
+2026-10-13 | Lembretes valem para qualquer item regular (3 compras nos últimos 6 pedidos) ausente do pedido e sem oferta, com teto de 5 | O plano só cita o caso "compra sempre"; o teto evita lista longa na tela
+2026-10-13 | Ofertas de combo (`bundle`) e `other` nunca viram preço nem entram na lista B | Não há como calcular preço unitário sem inventar desconto
+2026-10-13 | Mensagem diz "Para {receita}, faltou {produto}" e "do dia dd/mm" quando o pedido não é de hoje; a quantidade mínima da oferta aparece no texto | Evita erro de gênero ("pro/pra") e não promete preço fora da condição da oferta
+2026-10-13 | Sem âncora marcada na receita, todo ingrediente não commodity age como âncora; não há tela para marcar `is_commodity` | Receitas importadas chegam sem âncora; o roteiro da demo (T15) marca âncoras e commodities por script
+2026-10-13 | Recusa = sugestões de rodadas com resultado "declined", ou as não aceitas em "partial"; ficam fora por `declineCooldownDays` (30) | Plano pede não repetir o que foi recusado, sem definir o prazo
+2026-10-13 | `suggestion_runs.output_meta` guarda avisos e pendências de cada rodada | A tela do pedido precisa explicar por que a lista veio vazia ou incompleta
