@@ -14,6 +14,8 @@ export interface FichaItem {
 export interface FichaTecnicaProps {
   dish?: string;
   portions?: number;
+  /** substitui "porções" ao lado do título */
+  portionsLabel?: string;
   items: FichaItem[];
   /** ex.: "R$ 77,60" */
   total?: string;
@@ -25,6 +27,7 @@ export interface FichaTecnicaProps {
 export function FichaTecnica({
   dish = "Smash da casa",
   portions = 4,
+  portionsLabel = "porções",
   items = [],
   total,
   totalLabel = "Oferta enviada ao cliente",
@@ -58,7 +61,9 @@ export function FichaTecnica({
         }}
       >
         <span>Ficha técnica · {dish}</span>
-        <span style={{ whiteSpace: "nowrap" }}>{portions} porções</span>
+        <span style={{ whiteSpace: "nowrap" }}>
+          {portions} {portionsLabel}
+        </span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", marginTop: 16, fontSize: 15 }}>
         {items.map((it, i) => {
