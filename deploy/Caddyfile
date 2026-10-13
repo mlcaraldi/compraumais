@@ -1,0 +1,8 @@
+# HTTPS automático (Let's Encrypt) para o domínio em DOMAIN; com DOMAIN=localhost usa certificado local.
+{$DOMAIN:localhost} {
+	encode gzip
+	request_body {
+		max_size 32MB
+	}
+	reverse_proxy app:3000
+}

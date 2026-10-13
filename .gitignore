@@ -9,3 +9,4 @@ node_modules/
 test-results/
 playwright-report/
 /storage-test/
+!.env.prod.example

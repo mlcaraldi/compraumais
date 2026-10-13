@@ -73,4 +73,4 @@ Next.js (App Router) + TypeScript strict, PostgreSQL 16 + Drizzle, pg-boss (work
 - [x] T13 Painel
 - [x] T14 Ciclo de vida das ofertas
 - [x] T15 Carga inicial e demo
-- [ ] T16 Deploy
+- [x] T16 Deploy (imagem e compose validados só por `config`; ver docs/deploy.md seção 8)
