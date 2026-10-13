@@ -2,6 +2,7 @@ import { PgBoss } from "pg-boss";
 import { getDb } from "../db/client";
 import {
   QUEUE_EXTRACT,
+  QUEUE_EXPIRE,
   QUEUE_SUGGESTION,
   RETRY_LIMIT,
   runExtractJob,
@@ -36,7 +37,7 @@ export function createBoss(connectionString = process.env.DATABASE_URL) {
 }
 
 export async function createQueues(boss: PgBoss) {
-  for (const name of [QUEUE_EXTRACT, QUEUE_SUGGESTION])
+  for (const name of [QUEUE_EXTRACT, QUEUE_SUGGESTION, QUEUE_EXPIRE])
     await boss.createQueue(name, { retryLimit: RETRY_LIMIT, retryDelay: 30, retryBackoff: true });
 }
 

@@ -1,9 +1,10 @@
 import { Badge } from "@/components/core/Badge";
 import { Card } from "@/components/core/Card";
 import { PageHeader } from "@/components/PageHeader";
+import Link from "next/link";
 import { requireUser } from "@/server/auth/current-user";
 import { getDb } from "@/server/db/client";
-import { formatIsoBr } from "@/server/normalize";
+import { formatIsoBr, todayIso } from "@/server/normalize";
 import { promotionsRepo } from "@/server/repos";
 import { UploadPromotionsForm } from "./upload-form";
 
@@ -13,6 +14,8 @@ const STATUS: Record<string, string> = { active: "Ativa", expired: "Vencida", dr
 
 export default async function OfertasPage() {
   const user = await requireUser();
+  // onde não há worker (homologação), o vencimento é aplicado ao abrir a lista
+  await promotionsRepo.expireOverdue(getDb(), user.tenantId, todayIso(new Date()));
   const rows = await promotionsRepo.listPromotions(getDb(), user.tenantId);
   return (
     <>
@@ -38,7 +41,11 @@ export default async function OfertasPage() {
             <tbody>
               {rows.map(({ promotion: p, itemCount }) => (
                 <tr key={p.id} style={{ borderTop: "1px solid var(--border-1)" }}>
-                  <td style={{ padding: "12px 16px", fontWeight: 600 }}>{p.name}</td>
+                  <td style={{ padding: "12px 16px", fontWeight: 600 }}>
+                    <Link href={`/ofertas/${p.id}`} style={{ color: "var(--fg-accent)" }}>
+                      {p.name}
+                    </Link>
+                  </td>
                   <td style={{ padding: "12px 16px" }}>{p.supplierBrand}</td>
                   <td className="tabular" style={{ padding: "12px 16px" }}>
                     {formatIsoBr(p.startsOn)}

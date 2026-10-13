@@ -1,8 +1,12 @@
 import { getDb, closeDb } from "../src/server/db/client";
 import {
+  EXPIRE_CRON,
+  EXPIRE_TZ,
+  QUEUE_EXPIRE,
   QUEUE_EXTRACT,
   QUEUE_SUGGESTION,
   RETRY_LIMIT,
+  runExpireJob,
   runExtractJob,
   runSuggestionJob,
   type ExtractJobData,
@@ -34,6 +38,11 @@ export async function startWorker(connectionString = process.env.DATABASE_URL) {
       for (const job of jobs) await runSuggestionJob(getDb(), job.data);
     },
   );
+  await boss.schedule(QUEUE_EXPIRE, EXPIRE_CRON, {}, { tz: EXPIRE_TZ });
+  await boss.work(QUEUE_EXPIRE, { pollingIntervalSeconds: 30 }, async () => {
+    const n = await runExpireJob(getDb());
+    if (n) console.log(`worker: ${n} oferta(s) marcada(s) como vencida(s)`);
+  });
   console.log("worker: aguardando jobs");
   return boss;
 }

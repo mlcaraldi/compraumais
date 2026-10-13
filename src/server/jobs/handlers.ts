@@ -1,10 +1,16 @@
 import type { Db } from "../db/client";
 import { AiNullOutputError, AiRetryableError } from "../importers/ai/client";
-import { importsRepo } from "../repos";
+import { importsRepo, promotionsRepo } from "../repos";
+import { listTenantIds } from "../repos/tenant";
+import { todayIso } from "../normalize";
 import { resolveExtractor } from "./extractors";
 
 export const QUEUE_EXTRACT = "import.extract";
 export const QUEUE_SUGGESTION = "suggestion.run";
+export const QUEUE_EXPIRE = "offers.expire";
+/** Todo dia às 03:00 no horário de Brasília. */
+export const EXPIRE_CRON = "0 3 * * *";
+export const EXPIRE_TZ = "America/Sao_Paulo";
 export const RETRY_LIMIT = 2;
 
 export type ExtractJobData = { tenantId: string; jobId: string };
@@ -57,4 +63,13 @@ export async function runExtractJob(
 export async function runSuggestionJob(db: Db, data: SuggestionJobData) {
   const { runSuggestionsForOrder } = await import("../services/suggestions");
   await runSuggestionsForOrder(db, data.tenantId, data.orderId);
+}
+
+/** Marca como vencidas as ofertas cujo fim já passou, em todos os tenants. Devolve quantas mudaram. */
+export async function runExpireJob(db: Db, now: Date = new Date()) {
+  const today = todayIso(now);
+  let total = 0;
+  for (const tenantId of await listTenantIds(db))
+    total += await promotionsRepo.expireOverdue(db, tenantId, today);
+  return total;
 }
